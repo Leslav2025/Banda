@@ -1,1 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BANDA | Налёт на обменник</title>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+        
+        body { 
+            margin: 0; background: #050505; color: white; 
+            font-family: 'Orbitron', sans-serif; overflow: hidden; touch-action: none;
+        }
 
+        /* UI Layer */
+        .ui-layer { 
+            position: fixed; top: 0; left: 0; width: 100%; padding: 20px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            z-index: 10; pointer-events: none;
+        }
+        .timer { color: #ff0055; font-size: 24px; text-shadow: 0 0 10px #ff0055; }
+        .loot { color: #ffd700; font-size: 18px; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+
+        canvas { display: block; background: radial-gradient(circle, #1a0000 0%, #000 100%); }
+    </style>
+</head>
+<body>
+
+    <div class="ui-layer">
+        <div class="timer">TIME: <span id="time">30</span></div>
+        <div class="loot">LOOT: <span id="loot">0.000</span> TON</div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+<script>
+// Налаштування TonConnect (щоб перевірити, чи юзер підключений)
+const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+    manifestUrl: 'https://leslav2025.github.io/Banda/tonconnect-manifest.json'
+});
+
+tonConnectUI.onStatusChange(wallet => {
+    if (!wallet) window.location.href = 'index.html'; // Викидаємо, якщо відключився
+});
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const timeEl = document.getElementById('time');
+const lootEl = document.getElementById('loot');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let time = 30;
+let loot = 0;
+let gameActive = true;
+let policeChance = 0.1; // 10% шанс появи поліції
+
+// Спрощене зображення кастету
+function drawKnuckles(x, y) {
+    ctx.fillStyle = '#999'; // Сталевий колір
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    
+    ctx.beginPath();
+    // Основа (кільця)
+    for (let i = 0; i < 4; i++) {
+        ctx.arc(x + (i - 1.5) * 25, y + 10, 10, 0, Math.PI * 2);
+    }
+    // Ручка
+    ctx.fillRect(x - 50, y - 20, 100, 20);
+    ctx.fill();
+    ctx.stroke();
+}
+
+// Гроші (пачка)
+function drawMoney(x, y) {
+    ctx.fillStyle = '#00ff00';
+    ctx.fillRect(x - 20, y - 10, 40, 20);
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - 20, y - 10, 40, 20);
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = '12px Courier New';
+    ctx.fillText('TON', x - 10, y + 5);
+}
+
+// Поліція (сирена)
+function drawPolice(x, y) {
+    ctx.fillStyle = '#ff0000';
+    ctx.beginPath();
+    ctx.arc(x, y, 15, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#0000ff';
+    ctx.fillRect(x - 5, y - 15, 10, 30);
+}
+
+let player = { x: canvas.width / 2, y: canvas.height / 2, targetX: canvas.width / 2, targetY: canvas.height / 2 };
+let objects = [];
+
+// Рух гравця
+window.addEventListener('pointerdown', (e) => {
+    if (gameActive) {
+        player.targetX = e.clientX;
+        player.targetY = e.clientY;
+    }
+});
+
+// Таймер гри
+const timerInterval = setInterval(() => {
+    if (gameActive) {
+        time--;
+        timeEl.innerText = time;
+        if (time <= 0) {
+            gameActive = false;
+            clearInterval(timerInterval);
+            clearInterval(objectSpawnInterval);
+            alert('ГОТОВО!LOOT: ' + loot.toFixed(3) + ' TON. Вали на Малину.');
+            window.location.href = 'banda.html'; // Повертаємо на Малину
+        }
+    }
+}, 1000);
+
+// Поява об'єктів
+const objectSpawnInterval = setInterval(() => {
+    if (gameActive) {
+        let type = Math.random() < policeChance ? 'police' : 'money';
+        objects.push({
+            type: type,
+            x: Math.random() * (canvas.width - 50) + 25,
+            y: Math.random() * (canvas.height - 50) + 25,
+            spawnTime: Date.now()
+        });
+        
+        // Збільшуємо шанс поліції з часом
+        policeChance += 0.01;
+    }
+}, 800);
+
+// Основний цикл гри
+function update() {
+    if (!gameActive) return;
+
+    // Рух кастету
+    player.x += (player.targetX - player.x) * 0.15; // Трохи швидше
+    player.y += (player.targetY - player.y) * 0.15;
+
+    // Перевірка зіткнень та видалення старих об'єктів
+    const now = Date.now();
+    objects.forEach((obj, i) => {
+        // Якщо об'єкт не зібрали за 2 секунди — він зникає
+        if (now - obj.spawnTime > 2000) {
+            objects.splice(i, 1);
+            return;
+        }
+
+        // Збір об'єктів (зближення з кастетом)
+        if (Math.hypot(player.x - obj.x, player.y - obj.y) < 35) {
+            objects.splice(i, 1);
+            if (obj.type === 'money') {
+                loot += 0.005; // Більше грошей
+                lootEl.innerText = loot.toFixed(3);
+            } else if (obj.type === 'police') {
+                // Штраф за поліцію
+                loot = Math.max(0, loot - 0.010);
+                lootEl.innerText = loot.toFixed(3);
+                // Можна додати візуальний ефект "блимання" екрану
+            }
+        }
+    });
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Сетка (агресивна)
+    ctx.strokeStyle = '#220000'; ctx.lineWidth = 1;
+    for(let i=0; i<canvas.width; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
+    
+    // Об'єкти
+    objects.forEach(obj => {
+        if (obj.type === 'money') drawMoney(obj.x, obj.y);
+        else drawPolice(obj.x, obj.y);
+    });
+
+    // Гравець - КАСТЕТ
+    drawKnuckles(player.x, player.y);
+}
+
+function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+</body>
+</html>
