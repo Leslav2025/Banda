@@ -8,7 +8,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
         
         body { margin: 0; padding: 0; background: #000; color: white; font-family: Arial, sans-serif; overflow: hidden; touch-action: none; }
-        #game-canvas { display: block; opacity: 0.3; transition: opacity 0.5s; }
+        #game-canvas { display: block; opacity: 0.1; transition: opacity 0.5s; }
 
         /* UI Layer */
         #ui-layer { position: fixed; top: 20px; left: 20px; z-index: 10; pointer-events: none; font-family: 'Orbitron', sans-serif; }
@@ -16,18 +16,21 @@
         .label { font-size: 9px; color: #0088cc; text-transform: uppercase; letter-spacing: 1.5px; }
         .value { font-size: 18px; display: block; }
         
-        /* Кнопка TonConnect в углу */
-        #ton-connect-wrapper { position: fixed; top: 20px; right: 20px; z-index: 100; }
-
-        /* Центр регистрации (если не подключен) */
+        /* Экран регистрации */
         #reg-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 50;
+            background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 100;
         }
-        .reg-card { text-align: center; border: 1px solid #0088cc; padding: 40px; border-radius: 20px; background: #0a0a0a; }
+        .reg-card { 
+            text-align: center; border: 2px solid #0088cc; padding: 40px; 
+            border-radius: 20px; background: #0a0a0a; box-shadow: 0 0 30px #0088cc66;
+            max-width: 80%;
+        }
+
+        #ton-connect-btn { margin-top: 20px; display: inline-block; }
 
         /* Модалка выбора */
-        #choice-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 100; }
+        #choice-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .modal-card { background: #111; border: 2px solid #0088cc; padding: 30px; border-radius: 20px; text-align: center; max-width: 320px; }
         .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-family: 'Orbitron', sans-serif; text-transform: uppercase; }
         .btn-join { background: #0088cc; color: white; }
@@ -37,14 +40,11 @@
 </head>
 <body>
 
-    <div id="ton-connect-wrapper"><div id="ton-connect-btn"></div></div>
-
     <div id="reg-screen">
         <div class="reg-card">
-            <h1 style="font-family:'Orbitron'; color:#0088cc;">BANDA GAME</h1>
-            <p>Чтобы зайти на базар, предъяви свой кошелек</p>
-            <p style="font-size:12px; color:#555;">(Нажми на кнопку в углу экрана)</p>
-        </div>
+            <h1 style="font-family:'Orbitron'; color:#0088cc; margin-top:0;">BANDA GAME</h1>
+            <p>Чтобы зайти на базар,<br>предъяви свой кошелек</p>
+            <div id="ton-connect-btn"></div> </div>
     </div>
 
     <div id="ui-layer">
@@ -63,7 +63,7 @@
     <div id="choice-modal">
         <div class="modal-card">
             <h2 style="color:#0088cc; font-family:'Orbitron';">КУШ СОБРАН!</h2>
-            <p style="font-size:14px; color:#888;">Ты набрал 0.010 TON. Решай сейчас.</p>
+            <p style="font-size:14px; color:#888;">Ты набрал 0.010 TON. Решай судьбу.</p>
             <button class="btn btn-join" onclick="choosePath('banda')">ВСТУПИТЬ В БАНДУ</button>
             <button class="btn btn-kush" onclick="choosePath('kush')">ИДТИ ОДИНОЧКОЙ</button>
         </div>
@@ -79,33 +79,32 @@
         const gameCanvas = document.getElementById('game-canvas');
         const playerLabel = document.getElementById('player-label');
 
-        // Моніторинг підключення
+        let gameActive = false;
+
+        // Следим за входом
         tonConnectUI.onStatusChange(wallet => {
             if (wallet) {
                 regScreen.style.display = 'none';
                 gameCanvas.style.opacity = '1';
                 gameActive = true;
                 
-                // Відображаємо скорочену адресу гравця
                 const addr = wallet.account.address;
                 playerLabel.innerText = "ИГРОК: " + addr.substring(0, 4) + "..." + addr.substring(addr.length - 4);
                 
-                // Якщо вже був обраний шлях раніше — перенаправляємо
                 const path = localStorage.getItem('user_path');
                 if (path === 'banda') window.location.href = "banda.html";
                 if (path === 'kush') window.location.href = "kush.html";
             } else {
                 regScreen.style.display = 'flex';
-                gameCanvas.style.opacity = '0.3';
+                gameCanvas.style.opacity = '0.1';
                 gameActive = false;
             }
         });
 
-        // ЛОГІКА ГРИ (спрощено для прикладу)
+        // ГЕЙМПЛЕЙ
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
         let balance = 0.000;
-        let gameActive = false;
         let modalShown = false;
 
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
@@ -115,9 +114,13 @@
         const player = { x: canvas.width/2, y: canvas.height/2, targetX: canvas.width/2, targetY: canvas.height/2 };
         const coins = [];
 
-        window.addEventListener('pointerdown', (e) => { if(gameActive) { player.targetX = e.clientX; player.targetY = e.clientY; } });
+        window.addEventListener('pointerdown', (e) => { 
+            if(gameActive) { player.targetX = e.clientX; player.targetY = e.clientY; } 
+        });
 
-        function spawnCoin() { if (gameActive && coins.length < 8) coins.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height}); }
+        function spawnCoin() { 
+            if (gameActive && coins.length < 8) coins.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height}); 
+        }
         setInterval(spawnCoin, 1000);
 
         function update() {
@@ -139,8 +142,16 @@
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Сетка
+            ctx.strokeStyle = "#111"; ctx.lineWidth = 1;
+            for(let i=0; i<canvas.width; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
+            for(let i=0; i<canvas.height; i+=50) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
+            
+            // Монеты
             ctx.fillStyle = "#ffd700";
             coins.forEach(c => { ctx.beginPath(); ctx.arc(c.x, c.y, 10, 0, Math.PI*2); ctx.fill(); });
+            
+            // Игрок
             ctx.fillStyle = "#ffd700"; ctx.beginPath(); ctx.arc(player.x, player.y, 20, 0, Math.PI*2); ctx.fill();
             ctx.strokeStyle = "#0088cc"; ctx.lineWidth = 3; ctx.stroke();
         }
