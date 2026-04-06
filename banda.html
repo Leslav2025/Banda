@@ -13,10 +13,9 @@
             font-family: 'Orbitron', sans-serif; display: flex; flex-direction: column; align-items: center;
         }
 
-        /* Шапка Малины */
         .header {
             width: 100%; padding: 25px 20px; background: linear-gradient(180deg, #ff005522 0%, transparent 100%);
-            border-bottom: 1px solid #ff0055; text-align: center;
+            border-bottom: 1px solid #ff0055; text-align: center; box-sizing: border-box;
         }
 
         .rank-badge {
@@ -25,17 +24,24 @@
             box-shadow: 0 0 15px #ff0055;
         }
 
+        /* Личный счет */
+        .personal-stats {
+            margin-top: 20px; text-align: center;
+        }
+        #personal-loot {
+            color: #00ff00; font-size: 24px; font-weight: bold; text-shadow: 0 0 10px rgba(0,255,0,0.3);
+        }
+
         /* Общак */
         .obshak-card {
             width: 90%; max-width: 400px; background: #111; border: 2px solid #222;
-            border-radius: 15px; margin-top: 25px; padding: 20px; text-align: center;
-            position: relative; box-shadow: inset 0 0 20px #000;
+            border-radius: 15px; margin-top: 20px; padding: 20px; text-align: center;
+            box-sizing: border-box;
         }
 
-        .obshak-title { color: #888; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; }
-        .obshak-amount { color: #ffd700; font-size: 32px; font-weight: bold; margin: 10px 0; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+        .obshak-amount { color: #ffd700; font-size: 32px; font-weight: bold; margin: 10px 0; }
 
-        /* Тёрки (Миссии) */
+        /* Тёрки */
         .missions { width: 90%; max-width: 400px; margin-top: 30px; }
         .mission-item {
             background: #151515; padding: 15px; border-radius: 10px; margin-bottom: 10px;
@@ -53,7 +59,7 @@
         .btn-action:hover { background: #ff0055; color: #fff; }
 
         .logout-btn {
-            margin-top: 40px; color: #444; text-decoration: underline; 
+            margin-top: 30px; color: #444; text-decoration: underline; 
             font-size: 12px; cursor: pointer; padding-bottom: 20px;
         }
     </style>
@@ -62,18 +68,23 @@
 
     <div class="header">
         <h1 style="margin:0; font-size: 28px; color: #ff0055; letter-spacing: 3px;">МАЛИНА</h1>
-        <div id="user-rank" class="rank-badge">Боец</div>
+        <div class="rank-badge">Боец</div>
         <p id="user-address" style="font-size: 10px; color: #444; margin-top: 10px;">ID: LOADING...</p>
     </div>
 
+    <div class="personal-stats">
+        <span style="color: #888; font-size: 12px; text-transform: uppercase;">Твой личный куш:</span>
+        <div id="personal-loot">0.000 TON</div>
+    </div>
+
     <div class="obshak-card">
-        <div class="obshak-title">Наш Общак</div>
+        <div style="color: #888; font-size: 14px; text-transform: uppercase;">Наш Общак</div>
         <div class="obshak-amount">1,245.50 TON</div>
         <div style="font-size: 11px; color: #ff0055;">Клянусь, завтра будет больше</div>
     </div>
 
     <div class="missions">
-        <h3 style="font-size: 12px; margin-bottom: 15px; color: #555; letter-spacing: 1px;">БЛИЖАЙШИЕ ТЁРКИ:</h3>
+        <h3 style="font-size: 12px; margin-bottom: 15px; color: #555;">БЛИЖАЙШИЕ ТЁРКИ:</h3>
         
         <div class="mission-item">
             <div class="mission-info">
@@ -93,19 +104,25 @@
     </div>
 
     <div id="ton-connect-btn" style="margin-top: 30px;"></div>
-    
     <div class="logout-btn" onclick="logout()">Сменить масть (Выйти)</div>
 
 <script>
 const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
     manifestUrl: 'https://leslav2025.github.io/Banda/tonconnect-manifest.json',
-    buttonRootId: 'ton-connect-btn'
+    buttonRoot_id: 'ton-connect-btn'
 });
+
+// Відображення збереженого куша
+function updateUI() {
+    const savedLoot = localStorage.getItem('user_loot') || '0.000';
+    document.getElementById('personal-loot').innerText = savedLoot + ' TON';
+}
 
 tonConnectUI.onStatusChange(wallet => {
     if (wallet) {
         const addr = wallet.account.address;
         document.getElementById('user-address').innerText = 'ID: ' + addr.slice(0,8).toUpperCase();
+        updateUI();
     } else {
         window.location.href = 'index.html';
     }
@@ -115,6 +132,8 @@ async function logout() {
     await tonConnectUI.disconnect();
     window.location.href = 'index.html';
 }
+
+updateUI();
 </script>
 </body>
 </html>
