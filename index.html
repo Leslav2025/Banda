@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BANDA GAME</title>
+    <title>BANDA GAME | Базар</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
@@ -14,24 +14,20 @@
 
         canvas { border: 2px solid #333; border-radius: 12px; margin-top: 10px; background: #000; touch-action: none; }
 
-        /* Окно выбора */
         #action-modal { 
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
             background: #0a0a0a; padding: 25px; border: 3px solid #0088cc; border-radius: 20px; 
             z-index: 1000; text-align: center; width: 85%; box-shadow: 0 0 50px rgba(0, 136, 204, 0.5);
         }
 
-        /* Контейнер кнопки - ТЕПЕРЬ С ГАРАНТИРОВАННЫМ РАЗМЕРОМ */
-        #ton-connect-btn { 
-            display: block !important;
-            min-height: 50px; 
-            margin: 20px auto;
-        }
-
+        #ton-connect-btn { display: block !important; min-height: 50px; margin: 20px auto; }
         .path-selection { display: none; }
+        
         .btn-choice { width: 100%; padding: 15px; margin-top: 10px; border-radius: 10px; border: none; font-weight: bold; font-family: 'Orbitron'; cursor: pointer; text-transform: uppercase; }
         .btn-banda { background: #0088cc; color: white; }
         .btn-kush { background: #333; color: #ff4757; }
+
+        .logout-link { color: #666; text-decoration: underline; margin-top: 20px; cursor: pointer; font-size: 14px; display: block; }
     </style>
 </head>
 <body>
@@ -49,14 +45,15 @@
         <div id="ton-connect-btn"></div>
 
         <div id="path-options" class="path-selection">
-            <p style="color:#00ff00;">КОШЕЛЕК ГОТОВ!</p>
+            <p style="color:#00ff00; font-weight: bold;">КОШЕЛЕК ГОТОВ!</p>
             <button class="btn-choice btn-banda" onclick="selectPath('banda')">ВСТУПИТЬ В БАНДУ</button>
             <button class="btn-choice btn-kush" onclick="selectPath('kush')">ИДТИ ОДИНОЧКОЙ</button>
+            
+            <span class="logout-link" onclick="logout()">Сменить кошелек / Выйти</span>
         </div>
     </div>
 
 <script>
-// Важно: инициализация сразу при загрузке
 const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
     manifestUrl: 'https://leslav2025.github.io/Banda/tonconnect-manifest.json',
     buttonRootId: 'ton-connect-btn'
@@ -74,7 +71,6 @@ let gameActive = true;
 let player = { x: 175, y: 240, targetX: 175, targetY: 240 };
 let coins = [];
 
-// Мониторинг кошелька
 tonConnectUI.onStatusChange(wallet => {
     if (wallet) {
         pathOptions.style.display = 'block';
@@ -84,6 +80,11 @@ tonConnectUI.onStatusChange(wallet => {
         modalText.style.display = 'block';
     }
 });
+
+async function logout() {
+    await tonConnectUI.disconnect();
+    window.location.reload();
+}
 
 canvas.addEventListener('pointerdown', (e) => {
     const rect = canvas.getBoundingClientRect();
