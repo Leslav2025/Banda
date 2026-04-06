@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>БАНДА | Сбор куша</title>
+    <title>BANDA GAME | Базар</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
         
@@ -29,18 +29,19 @@
         .modal-card {
             background: #111; border: 2px solid #0088cc;
             padding: 30px; border-radius: 20px; text-align: center;
-            max-width: 300px; box-shadow: 0 0 40px rgba(0, 136, 204, 0.4);
+            max-width: 320px; box-shadow: 0 0 40px rgba(0, 136, 204, 0.4);
         }
 
         .btn {
             display: block; width: 100%; padding: 15px; margin: 10px 0;
             border: none; border-radius: 10px; font-weight: bold;
             cursor: pointer; font-family: 'Orbitron', sans-serif;
-            text-transform: uppercase;
+            text-transform: uppercase; transition: 0.3s;
         }
 
         .btn-join { background: #0088cc; color: white; }
-        .btn-obshak { background: #333; color: #eee; }
+        .btn-kush { background: #333; color: #ff4444; border: 1px solid #444; }
+        .btn:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
@@ -60,16 +61,22 @@
 
     <div id="choice-modal">
         <div class="modal-card">
-            <h2 style="color:#0088cc; font-family:'Orbitron';">КУШ СОБРАН!</h2>
-            <p style="font-size:14px; color:#888;">Ты набрал нужную сумму на базаре. Теперь время решать свою судьбу.</p>
+            <h2 style="color:#0088cc; font-family:'Orbitron'; margin-top:0;">КУШ СОБРАН!</h2>
+            <p style="font-size:14px; color:#888;">Ты набрал 0.010 TON. Конкуренты уже в пути. Твое решение?</p>
             
-            <button class="btn btn-join" onclick="location.href='banda.html'">ВСТУПИТЬ В БАНДУ</button>
-            
-            <button class="btn btn-obshak" onclick="location.href='kush.html'">ИДТИ СВОИМ ПУТЕМ</button>
+            <button class="btn btn-join" onclick="choosePath('banda')">ВСТУПИТЬ В БАНДУ<br><small style="font-size:9px;">Стать своим</small></button>
+            <button class="btn btn-kush" onclick="choosePath('kush')">ИДТИ ОДИНОЧКОЙ<br><small style="font-size:9px;">Забрать всё себе</small></button>
         </div>
     </div>
 
     <script>
+        // ПРОВЕРКА ВЫБОРА ПРИ ЗАГРУЗКЕ
+        window.onload = function() {
+            const path = localStorage.getItem('user_path');
+            if (path === 'banda') window.location.href = "banda.html";
+            if (path === 'kush') window.location.href = "kush.html";
+        };
+
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
         const poolEl = document.getElementById('total-pool');
@@ -96,7 +103,6 @@
             player.targetY = e.clientY;
         });
 
-        // Імітація росту общака
         function updateGlobalPool() {
             poolValue += Math.random() * 0.005;
             poolEl.innerText = poolValue.toFixed(3) + " TON";
@@ -125,7 +131,6 @@
                 }
             });
 
-            // Коли назбирав 0.010 — вискакує вибір сторінок
             if (balance >= 0.010 && !modalShown) {
                 gameActive = false;
                 modalShown = true;
@@ -135,26 +140,28 @@
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Сітка
             ctx.strokeStyle = "#111";
             for(let i=0; i<canvas.width; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
             for(let i=0; i<canvas.height; i+=50) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
 
-            // Монети
             ctx.fillStyle = "#ffd700";
             coins.forEach(c => {
                 ctx.beginPath(); ctx.arc(c.x, c.y, 10, 0, Math.PI*2); ctx.fill();
                 ctx.strokeStyle = "white"; ctx.stroke();
             });
 
-            // Гравець
             ctx.fillStyle = "#ffd700";
             ctx.beginPath(); ctx.arc(player.x, player.y, 20, 0, Math.PI*2); ctx.fill();
             ctx.strokeStyle = "#0088cc"; ctx.lineWidth = 3; ctx.stroke();
-            // Галстук
+            
             ctx.fillStyle = "red";
             ctx.beginPath(); ctx.moveTo(player.x, player.y+5); ctx.lineTo(player.x-5, player.y+15); ctx.lineTo(player.x+5, player.y+15); ctx.fill();
+        }
+
+        // ФУНКЦИЯ ВЫБОРА ПУТИ
+        function choosePath(path) {
+            localStorage.setItem('user_path', path);
+            window.location.href = path + ".html";
         }
 
         function loop() { update(); draw(); requestAnimationFrame(loop); }
