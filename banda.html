@@ -1,114 +1,3 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BANDA | Малина</title>
-    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-        body { margin: 0; background: #080808; color: #e0e0e0; font-family: 'Orbitron', sans-serif; display: flex; flex-direction: column; align-items: center; }
-        .header { width: 100%; padding: 25px 20px; background: linear-gradient(180deg, #ff005522 0%, transparent 100%); border-bottom: 1px solid #ff0055; text-align: center; box-sizing: border-box; }
-        .rank-badge { display: inline-block; padding: 5px 15px; background: #ff0055; color: white; border-radius: 20px; font-size: 12px; text-transform: uppercase; margin-top: 5px; box-shadow: 0 0 15px #ff0055; transition: 0.5s; }
-        .personal-stats { margin-top: 20px; text-align: center; width: 90%; }
-        #personal-loot { color: #00ff00; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px rgba(0,255,0,0.3); }
-        .obshak-card { width: 90%; max-width: 400px; background: #111; border: 2px solid #222; border-radius: 15px; margin-top: 20px; padding: 20px; text-align: center; box-sizing: border-box; }
-        .obshak-amount { color: #ffd700; font-size: 32px; font-weight: bold; margin: 10px 0; }
-        .btn-action { background: transparent; border: 1px solid #ff0055; color: #ff0055; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-family: 'Orbitron'; text-transform: uppercase; font-size: 11px; width: 100%; margin-top: 10px; transition: 0.3s; }
-        .btn-real-ton { border-color: #ffd700; color: #ffd700; animation: pulse-gold 2s infinite; font-weight: bold; }
-        @keyframes pulse-gold { 0% { box-shadow: 0 0 5px #ffd700; } 50% { box-shadow: 0 0 20px #ffd700; } 100% { box-shadow: 0 0 5px #ffd700; } }
-        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .shop-item { background: #151515; padding: 10px; border-radius: 10px; border: 1px solid #333; text-align: center; }
-        .missions { width: 90%; max-width: 400px; margin-top: 30px; }
-        .mission-item { background: #151515; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #ff0055; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
-        .logout-btn { margin-top: 30px; color: #444; font-size: 12px; cursor: pointer; padding-bottom: 30px; }
-    </style>
-</head>
-<body>
-
-    <div class="header">
-        <h1 style="margin:0; font-size: 28px; color: #ff0055; letter-spacing: 3px;">МАЛИНА</h1>
-        <div id="rank-display" class="rank-badge">Боец</div>
-        <p id="user-address" style="font-size: 10px; color: #444; margin-top: 10px;">ID: LOADING...</p>
-    </div>
-
-    <div class="personal-stats">
-        <span style="color: #888; font-size: 12px;">Твой личный куш:</span>
-        <div id="personal-loot">0.000 TON</div>
-        <button class="btn-action btn-real-ton" onclick="sendRealTon(0.1, 'Взнос в Авторитет')">💎 ВЗНОС В АВТОРИТЕТ (0.1 TON)</button>
-        <button class="btn-action" style="border-color: #00ff00; color: #00ff00;" onclick="addToObshak()">Сбросить в Общак</button>
-    </div>
-
-    <div style="width: 90%; max-width: 400px; margin-top: 25px;">
-        <h3 style="font-size: 12px; color: #555;">ЧЕРНЫЙ РЫНОК:</h3>
-        <div class="shop-grid">
-            <div class="shop-item">
-                <div style="font-size: 20px;">🎭</div>
-                <div style="font-size: 10px; margin: 5px 0;">МАСКА</div>
-                <button class="btn-action" style="font-size: 9px; border-color: #ffd700; color: #ffd700;" onclick="sendRealTon(0.2, 'Маска')">0.2 TON</button>
-            </div>
-            <div class="shop-item">
-                <div style="font-size: 20px;">🔑</div>
-                <div style="font-size: 10px; margin: 5px 0;">ОТМЫЧКА</div>
-                <button class="btn-action" style="font-size: 9px; border-color: #ffd700; color: #ffd700;" onclick="sendRealTon(0.5, 'Отмычка')">0.5 TON</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="obshak-card">
-        <div style="color: #888; font-size: 14px;">НАШ ОБЩАК</div>
-        <div id="obshak-display" class="obshak-amount">1245.50 TON</div>
-    </div>
-
-    <div class="missions">
-        <div class="mission-item">
-            <div style="flex:1"><h4>Налёт на обменник</h4><p style="color:#ff0055; font-size:12px;">КУШ: ~0.050 TON</p></div>
-            <button class="btn-action" style="width:auto" onclick="window.location.href='mission1.html'">В ДЕЛЕ</button>
-        </div>
-        <div id="safe-mission" class="mission-item" style="opacity: 0.3;">
-            <div style="flex:1"><h4>Взлом сейфа</h4><p id="safe-text" style="color:#444; font-size:11px;">Нужен ранг: Авторитет</p></div>
-            <button class="btn-action" style="width:auto">🔒</button>
-        </div>
-    </div>
-
-    <div id="ton-connect-btn" style="margin-top: 20px;"></div>
-    <div class="logout-btn" onclick="logout()">Сменить масть (Выйти)</div>
-
-<script>
-const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-    manifestUrl: 'https://leslav2025.github.io/Banda/tonconnect-manifest.json',
-    buttonRootId: 'ton-connect-btn'
-});
-
-const MY_WALLET = "UQDXq1iAqu88tVRG62_k03kAXELu_1gzRBMye-VZoFRIRtWw";
-
-function updateUI() {
-    const savedLoot = localStorage.getItem('user_loot') || '0.000';
-    const obshakTotal = parseFloat(localStorage.getItem('obshak_total') || '1245.50');
-    
-    document.getElementById('personal-loot').innerText = savedLoot + ' TON';
-    document.getElementById('obshak-display').innerText = obshakTotal.toFixed(2) + ' TON';
-
-    // Логіка рангів та розблокування сейфа
-    const rankBadge = document.getElementById('rank-display');
-    const safeMission = document.getElementById('safe-mission');
-    const safeText = document.getElementById('safe-text');
-
-    if (obshakTotal >= 1260 || localStorage.getItem('hasLockpick')) {
-        rankBadge.innerText = "Авторитет";
-        rankBadge.style.background = "#ffd700";
-        rankBadge.style.boxShadow = "0 0 20px #ffd700";
-        safeMission.style.opacity = "1";
-        safeMission.style.borderLeftColor = "#ffd700";
-        safeText.innerText = "КУШ: 2.500 TON";
-        safeText.style.color = "#ffd700";
-    } else if (obshakTotal >= 1250) {
-        rankBadge.innerText = "Бригадир";
-        rankBadge.style.background = "#00ff00";
-        rankBadge.style.boxShadow = "0 0 15px #00ff00";
-    }
-}
-
 async function sendRealTon(amount, itemName) {
     if (!tonConnectUI.connected) return alert('Сначала подключи кошелёк!');
     const transaction = {
@@ -117,16 +6,19 @@ async function sendRealTon(amount, itemName) {
     };
     try {
         await tonConnectUI.sendTransaction(transaction);
-        alert('ЕСТЬ! ' + itemName + ' оплачен. Авторитет растёт!');
+        alert('ЕСТЬ! ' + itemName + ' оплачен.');
         if(itemName === 'Отмычка') localStorage.setItem('hasLockpick', 'true');
         updateUI();
     } catch (e) { alert('Сделка сорвалась...'); }
 }
 
+function showLeaders() { document.getElementById('leaderModal').style.display = "block"; }
+function closeLeaders() { document.getElementById('leaderModal').style.display = "none"; }
+
 function addToObshak() {
     const currentLoot = parseFloat(localStorage.getItem('user_loot') || '0');
     if (currentLoot > 0) {
-        let obshakTotal = parseFloat(localStorage.getItem('obshak_total') || '1245.50');
+        let obshakTotal = parseFloat(localStorage.getItem('obshak_total') || '1246.53');
         localStorage.setItem('obshak_total', (obshakTotal + currentLoot).toString());
         localStorage.setItem('user_loot', '0.000');
         updateUI();
