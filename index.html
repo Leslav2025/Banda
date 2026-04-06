@@ -7,78 +7,46 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
         
-        body {
-            margin: 0; padding: 0;
-            background: #0a0a0a;
-            color: white;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-            touch-action: none;
-        }
+        body { margin: 0; padding: 0; background: #0a0a0a; color: white; font-family: Arial, sans-serif; overflow: hidden; touch-action: none; }
+        #game-canvas { display: block; background: radial-gradient(circle, #1a1a1a 0%, #000 100%); cursor: crosshair; }
 
-        #game-canvas {
-            display: block;
-            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
-        }
-
-        /* UI ИНТЕРФЕЙС */
-        #ui-layer {
-            position: fixed; top: 20px; left: 20px;
-            z-index: 10; pointer-events: none;
-            font-family: 'Orbitron', sans-serif;
-        }
-
+        /* UI */
+        #ui-layer { position: fixed; top: 20px; left: 20px; z-index: 10; pointer-events: none; font-family: 'Orbitron', sans-serif; }
         .stat-box { margin-bottom: 15px; }
         .label { font-size: 10px; color: #0088cc; text-transform: uppercase; letter-spacing: 2px; }
         .value { font-size: 24px; display: block; }
-        
         #total-pool { color: #ffcc00; text-shadow: 0 0 10px rgba(255, 204, 0, 0.5); }
         #personal-balance { color: #00ff00; text-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
 
-        /* Вспышка урона */
-        #damage-flash {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: red; opacity: 0; pointer-events: none;
-            transition: opacity 0.1s; z-index: 5;
-        }
+        /* Эффекты */
+        #damage-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: red; opacity: 0; pointer-events: none; transition: opacity 0.1s; z-index: 5; }
+        #dodge-bar-container { position: fixed; bottom: 20px; left: 20px; width: 100px; height: 10px; border: 1px solid #0088cc; border-radius: 5px; z-index: 10; }
+        #dodge-bar { width: 100%; height: 100%; background: #0088cc; border-radius: 4px; transition: width 0.1s linear; }
 
-        /* Модалка выбора */
-        #choice-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            display: none; align-items: center; justify-content: center;
-            z-index: 100;
-        }
-
-        .modal-card {
-            background: #111; border: 2px solid #0088cc;
-            padding: 30px; border-radius: 20px; text-align: center;
-            max-width: 300px; box-shadow: 0 0 40px rgba(0, 136, 204, 0.4);
-        }
-
-        .btn {
-            display: block; width: 100%; padding: 15px; margin: 10px 0;
-            border: none; border-radius: 10px; font-weight: bold;
-            cursor: pointer; font-family: 'Orbitron', sans-serif;
-            text-transform: uppercase;
-        }
-
+        /* Модалка */
+        #choice-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal-card { background: #111; border: 2px solid #0088cc; padding: 30px; border-radius: 20px; text-align: center; max-width: 300px; box-shadow: 0 0 40px rgba(0, 136, 204, 0.4); }
+        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-family: 'Orbitron', sans-serif; text-transform: uppercase; }
         .btn-join { background: #0088cc; color: white; box-shadow: 0 5px 15px rgba(0, 136, 204, 0.4); }
         .btn-obshak { background: #222; color: #666; }
-
     </style>
 </head>
 <body>
 
     <div id="damage-flash"></div>
+    
+    <div id="dodge-bar-container">
+        <div id="dodge-bar"></div>
+        <span style="font-size:8px; color:#0088cc; position:absolute; top:-12px;">УКЛОНЕНИЕ (TAP ON ME)</span>
+    </div>
 
     <div id="ui-layer">
         <div class="stat-box">
-            <span class="label">ОБЩАК БАНДЫ</span>
+            <span class="label">СЛЕДУЮЩИЙ КУШ</span>
             <span id="total-pool" class="value">124.50 TON</span>
         </div>
         <div class="stat-box">
-            <span class="label">ТВОЙ КУШ</span>
+            <span class="label">ТВОЙ НАЧАЛЬНЫЙ КУШ</span>
             <span id="personal-balance" class="value">0.000</span>
         </div>
     </div>
@@ -88,11 +56,9 @@
     <div id="choice-modal">
         <div class="modal-card">
             <h2 style="color:#0088cc; font-family:'Orbitron'; margin-top:0;">КУШ СОБРАН!</h2>
-            <p style="font-size:14px; color:#888;">Ты набрал 0.010 TON на базаре. Конкуренты уже близко. Что дальше?</p>
-            
+            <p style="font-size:14px; color:#888;">Ты набрал 0.010 TON на базаре. Теперь ты готов к настоящей игре.</p>
             <button class="btn btn-join" onclick="goToBanda()">ВСТУПИТЬ В БАНДУ<br><small style="font-size:9px;">(Перейти к оплате)</small></button>
-            
-            <button class="btn btn-obshak" onclick="continueSolo()">ИДТИ ОДИНОЧКОЙ<br><small style="font-size:9px;">(Сбросить и играть заново)</small></button>
+            <button class="btn btn-obshak" onclick="continueSolo()">ИДТИ ОДИНОЧКОЙ<br><small style="font-size:9px;">(Сбросить счет)</small></button>
         </div>
     </div>
 
@@ -103,38 +69,75 @@
         const balanceEl = document.getElementById('personal-balance');
         const flash = document.getElementById('damage-flash');
         const modal = document.getElementById('choice-modal');
+        const dodgeBar = document.getElementById('dodge-bar');
 
         let balance = 0.000;
         let poolValue = 124.500;
         let gameActive = true;
         let modalShown = false;
 
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
+        // Параметры уклонения
+        let isDodging = false;
+        let dodgeCooldown = false;
+        const dodgeDuration = 300; // мсневразливості
+        const dodgeCooldownTime = 2000; // мс перезарядки
+
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize);
         resize();
 
-        const player = { x: canvas.width/2, y: canvas.height/2, targetX: canvas.width/2, targetY: canvas.height/2 };
-        const coins = [];
-        const enemies = [];
-        const bullets = [];
+        const player = { x: canvas.width/2, y: canvas.height/2, targetX: canvas.width/2, targetY: canvas.height/2, radius: 20 };
+        const coins = []; const enemies = []; const bullets = [];
 
-        window.addEventListener('pointerdown', (e) => { player.targetX = e.clientX; player.targetY = e.clientY; });
+        // УПРАВЛЕНИЕ
+        window.addEventListener('pointerdown', (e) => {
+            if (!gameActive) return;
+            
+            // Проверка: нажали ли на игрока
+            const distToPlayer = Math.hypot(e.clientX - player.x, e.clientY - player.y);
+            
+            if (distToPlayer < player.radius + 10) {
+                // Нажали на игрока - пробуем уклониться
+                tryDodge();
+            } else {
+                // Нажали мимо - просто бежим
+                player.targetX = e.clientX;
+                player.targetY = e.clientY;
+            }
+        });
 
-        // Живой счетчик ОБЩАКА
+        function tryDodge() {
+            if (dodgeCooldown || isDodging) return;
+
+            isDodging = true;
+            dodgeCooldown = true;
+            
+            // Анимация полоски КД
+            dodgeBar.style.width = '0%';
+            
+            // Конец невразливості
+            setTimeout(() => {
+                isDodging = false;
+            }, dodgeDuration);
+
+            // Конец перезарядки
+            setTimeout(() => {
+                dodgeCooldown = false;
+                dodgeBar.style.width = '100%';
+            }, dodgeCooldownTime);
+        }
+
+        // Логика Общака
         function updateGlobalPool() {
-            poolValue += Math.random() * 0.002;
-            poolEl.innerText = poolValue.toFixed(3) + " TON";
+            poolValue += Math.random() * 0.002; poolEl.innerText = poolValue.toFixed(3) + " TON";
             setTimeout(updateGlobalPool, 3000 + Math.random() * 2000);
         }
         updateGlobalPool();
 
         function spawn() {
             if (gameActive) {
-                if (coins.length < 6) coins.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height});
-                if (enemies.length < 2 && balance > 0.003) enemies.push({x: Math.random()>0.5?-50:canvas.width+50, y: Math.random()*canvas.height, lastShot: 0});
+                if (coins.length < 5) coins.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: 10});
+                if (enemies.length < 2 && balance > 0.002) enemies.push({x: Math.random()>0.5?-50:canvas.width+50, y: Math.random()*canvas.height, lastShot: Date.now()});
             }
         }
         setInterval(spawn, 1500);
@@ -147,16 +150,14 @@
 
             coins.forEach((c, i) => {
                 if (Math.hypot(player.x - c.x, player.y - c.y) < 30) {
-                    coins.splice(i, 1);
-                    balance += 0.001;
-                    balanceEl.innerText = balance.toFixed(3);
+                    coins.splice(i, 1); balance += 0.001; balanceEl.innerText = balance.toFixed(3);
                 }
             });
 
             enemies.forEach(en => {
-                if (Date.now() - en.lastShot > 2500) {
+                if (Date.now() - en.lastShot > 2000) {
                     const angle = Math.atan2(player.y - en.y, player.x - en.x);
-                    bullets.push({x: en.x, y: en.y, vx: Math.cos(angle)*5, vy: Math.sin(angle)*5});
+                    bullets.push({x: en.x, y: en.y, vx: Math.cos(angle)*6, vy: Math.sin(angle)*6});
                     en.lastShot = Date.now();
                 }
             });
@@ -165,53 +166,64 @@
                 b.x += b.vx; b.y += b.vy;
                 if (Math.hypot(player.x - b.x, player.y - b.y) < 25) {
                     bullets.splice(i, 1);
-                    if (balance > 0) {
-                        balance -= 0.002;
-                        if (balance < 0) balance = 0;
-                        balanceEl.innerText = balance.toFixed(3);
-                        flash.style.opacity = 0.5; setTimeout(() => flash.style.opacity = 0, 100);
+                    
+                    // ПРОВЕРКА НА УКЛОНЕНИЕ
+                    if (!isDodging) {
+                        if (balance > 0) {
+                            balance -= 0.002; if (balance < 0) balance = 0;
+                            balanceEl.innerText = balance.toFixed(3);
+                            flash.style.opacity = 0.5; setTimeout(() => flash.style.opacity = 0, 100);
+                        }
+                    } else {
+                        // Уклонился! Можно добавить звук или эффект
+                        console.log("DODGED!");
                     }
                 }
             });
 
-            if (balance >= 0.010 && !modalShown) {
-                gameActive = false;
-                modalShown = true;
-                modal.style.display = 'flex';
-            }
+            if (balance >= 0.010 && !modalShown) { gameActive = false; modalShown = true; modal.style.display = 'flex'; }
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Сетка фона
+            // Сетка
             ctx.strokeStyle = "#111"; ctx.lineWidth = 1;
             for(let i=0; i<canvas.width; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
             for(let i=0; i<canvas.height; i+=50) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
 
+            // Монеты
             ctx.fillStyle = "#ffd700";
-            coins.forEach(c => { ctx.beginPath(); ctx.arc(c.x, c.y, 10, 0, Math.PI*2); ctx.fill(); });
+            coins.forEach(c => { ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle="white"; ctx.stroke(); });
 
+            // Пули
             ctx.fillStyle = "red";
             bullets.forEach(b => { ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI*2); ctx.fill(); });
 
-            ctx.fillStyle = "#ffcc00";
-            ctx.beginPath(); ctx.arc(player.x, player.y, 20, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = "black"; ctx.fillRect(player.x-10, player.y+5, 20, 5); // Стилизация
+            // Враги
+            ctx.fillStyle = "#222";
+            enemies.forEach(en => { ctx.fillRect(en.x - 20, en.y - 20, 40, 40); ctx.fillStyle = "red"; ctx.fillRect(en.x-10, en.y-10, 5, 5); ctx.fillRect(en.x+5, en.y-10, 5, 5); ctx.fillStyle="#222"; });
+
+            // Игрок (Монета)
+            ctx.fillStyle = "#ffd700";
+            ctx.beginPath(); ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = "black"; ctx.lineWidth = 2; ctx.stroke();
+            
+            // Визуализация УКЛОНЕНИЯ
+            if (isDodging) {
+                ctx.fillStyle = "rgba(0, 136, 204, 0.5)"; // Голубой след
+                ctx.beginPath(); ctx.arc(player.x, player.y, player.radius + 10, 0, Math.PI*2); ctx.fill();
+            } else {
+                // Обычный вид (галстук)
+                ctx.fillStyle = "red"; ctx.beginPath(); ctx.moveTo(player.x, player.y + 5); ctx.lineTo(player.x-5, player.y+20); ctx.lineTo(player.x+5, player.y+20); ctx.fill();
+            }
         }
 
         function loop() { update(); draw(); requestAnimationFrame(loop); }
         loop();
 
         function goToBanda() { window.location.href = "banda.html"; }
-        
-        function continueSolo() {
-            modal.style.display = 'none';
-            balance = 0;
-            balanceEl.innerText = "0.000";
-            modalShown = false;
-            gameActive = true;
-        }
+        function continueSolo() { modal.style.display = 'none'; balance = 0; balanceEl.innerText = "0.000"; modalShown = false; gameActive = true; }
     </script>
 </body>
 </html>
