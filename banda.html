@@ -1,1 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BANDA | Малина</title>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        
+        body { 
+            margin: 0; background: #080808; color: #e0e0e0; 
+            font-family: 'Orbitron', sans-serif; display: flex; flex-direction: column; align-items: center;
+        }
 
+        /* Шапка Малины */
+        .header {
+            width: 100%; padding: 25px 20px; background: linear-gradient(180deg, #ff005522 0%, transparent 100%);
+            border-bottom: 1px solid #ff0055; text-align: center;
+        }
+
+        .rank-badge {
+            display: inline-block; padding: 5px 15px; background: #ff0055; color: white;
+            border-radius: 20px; font-size: 12px; text-transform: uppercase; margin-top: 5px;
+            box-shadow: 0 0 15px #ff0055;
+        }
+
+        /* Общак */
+        .obshak-card {
+            width: 90%; max-width: 400px; background: #111; border: 2px solid #222;
+            border-radius: 15px; margin-top: 25px; padding: 20px; text-align: center;
+            position: relative; box-shadow: inset 0 0 20px #000;
+        }
+
+        .obshak-title { color: #888; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; }
+        .obshak-amount { color: #ffd700; font-size: 32px; font-weight: bold; margin: 10px 0; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+
+        /* Тёрки (Миссии) */
+        .missions { width: 90%; max-width: 400px; margin-top: 30px; }
+        .mission-item {
+            background: #151515; padding: 15px; border-radius: 10px; margin-bottom: 10px;
+            border-left: 4px solid #ff0055; display: flex; justify-content: space-between; align-items: center;
+        }
+        .mission-info h4 { margin: 0; color: #fff; font-size: 14px; text-transform: uppercase; }
+        .mission-info p { margin: 5px 0 0; color: #ff0055; font-size: 12px; font-weight: bold; }
+
+        .btn-action {
+            background: transparent; border: 1px solid #ff0055; color: #ff0055;
+            padding: 8px 15px; border-radius: 5px; cursor: pointer; font-family: 'Orbitron';
+            text-transform: uppercase; font-size: 10px;
+        }
+
+        .btn-action:hover { background: #ff0055; color: #fff; }
+
+        /* Выход */
+        .logout-btn {
+            margin-top: 40px; color: #444; text-decoration: underline; 
+            font-size: 12px; cursor: pointer; padding-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 style="margin:0; font-size: 28px; color: #ff0055; letter-spacing: 3px;">МАЛИНА</h1>
+        <div id="user-rank" class="rank-badge">Боец</div>
+        <p id="user-address" style="font-size: 10px; color: #444; margin-top: 10px;">ID: LOADING...</p>
+    </div>
+
+    <div class="obshak-card">
+        <div class="obshak-title">Наш Общак</div>
+        <div class="obshak-amount">1,245.50 TON</div>
+        <div style="font-size: 11px; color: #ff0055;">Клянусь, завтра будет больше</div>
+    </div>
+
+    <div class="missions">
+        <h3 style="font-size: 12px; margin-bottom: 15px; color: #555; letter-spacing: 1px;">БЛИЖАЙШИЕ ТЁРКИ:</h3>
+        
+        <div class="mission-item">
+            <div class="mission-info">
+                <h4>Налёт на обменник</h4>
+                <p>КУШ: 0.050 TON</p>
+            </div>
+            <button class="btn-action" onclick="alert('Тихо! Дело готовится...')">В ДЕЛЕ</button>
+        </div>
+
+        <div class="mission-item" style="opacity: 0.4;">
+            <div class="mission-info">
+                <h4>Взлом сейфа</h4>
+                <p>Нужен ранг: Авторитет</p>
+            </div>
+            <button class="btn-action">🔒</button>
+        </div>
+    </div>
+
+    <div id="ton-connect-btn" style="margin-top: 30px;"></div>
+    
+    <div class="logout-btn" onclick="logout()">Сменить масть (Выйти)</div>
+
+<script>
+const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+    manifestUrl: 'https://leslav2025.github.io/Banda/tonconnect-manifest.json',
+    buttonRootId: 'ton-connect-btn'
+});
+
+tonConnectUI.onStatusChange(wallet => {
+    if (wallet) {
+        const addr = wallet.account.address;
+        document.getElementById('user-address').innerText = 'ID: ' + addr.slice(0,8).toUpperCase();
+    } else {
+        window.location.href = 'index.html';
+    }
+});
+
+async function logout() {
+    await tonConnectUI.disconnect();
+    window.location.href = 'index.html';
+}
+</script>
+</body>
+</html>
