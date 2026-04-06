@@ -24,44 +24,42 @@
             box-shadow: 0 0 15px #ff0055;
         }
 
-        /* Личный счет */
-        .personal-stats {
-            margin-top: 20px; text-align: center;
-        }
-        #personal-loot {
-            color: #00ff00; font-size: 24px; font-weight: bold; text-shadow: 0 0 10px rgba(0,255,0,0.3);
-        }
+        .personal-stats { margin-top: 20px; text-align: center; padding: 0 10px; }
+        #personal-loot { color: #00ff00; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px rgba(0,255,0,0.3); }
 
-        /* Общак */
         .obshak-card {
             width: 90%; max-width: 400px; background: #111; border: 2px solid #222;
             border-radius: 15px; margin-top: 20px; padding: 20px; text-align: center;
             box-sizing: border-box;
         }
-
         .obshak-amount { color: #ffd700; font-size: 32px; font-weight: bold; margin: 10px 0; }
 
-        /* Тёрки */
+        .btn-action {
+            background: transparent; border: 1px solid #ff0055; color: #ff0055;
+            padding: 12px 20px; border-radius: 8px; cursor: pointer; font-family: 'Orbitron';
+            text-transform: uppercase; font-size: 11px; width: 100%; max-width: 280px;
+            margin-top: 10px; transition: 0.3s;
+        }
+
+        .btn-real-ton {
+            border-color: #ffd700; color: #ffd700; 
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+            font-weight: bold; animation: pulse-gold 2s infinite;
+        }
+
+        @keyframes pulse-gold {
+            0% { box-shadow: 0 0 5px #ffd700; }
+            50% { box-shadow: 0 0 20px #ffd700; }
+            100% { box-shadow: 0 0 5px #ffd700; }
+        }
+
         .missions { width: 90%; max-width: 400px; margin-top: 30px; }
         .mission-item {
             background: #151515; padding: 15px; border-radius: 10px; margin-bottom: 10px;
             border-left: 4px solid #ff0055; display: flex; justify-content: space-between; align-items: center;
         }
-        .mission-info h4 { margin: 0; color: #fff; font-size: 14px; text-transform: uppercase; }
-        .mission-info p { margin: 5px 0 0; color: #ff0055; font-size: 12px; font-weight: bold; }
 
-        .btn-action {
-            background: transparent; border: 1px solid #ff0055; color: #ff0055;
-            padding: 8px 15px; border-radius: 5px; cursor: pointer; font-family: 'Orbitron';
-            text-transform: uppercase; font-size: 10px;
-        }
-
-        .btn-action:hover { background: #ff0055; color: #fff; }
-
-        .logout-btn {
-            margin-top: 30px; color: #444; text-decoration: underline; 
-            font-size: 12px; cursor: pointer; padding-bottom: 20px;
-        }
+        .logout-btn { margin-top: 30px; color: #444; font-size: 12px; cursor: pointer; padding-bottom: 30px; }
     </style>
 </head>
 <body>
@@ -75,53 +73,96 @@
     <div class="personal-stats">
         <span style="color: #888; font-size: 12px; text-transform: uppercase;">Твой личный куш:</span>
         <div id="personal-loot">0.000 TON</div>
+        
+        <button class="btn-action btn-real-ton" onclick="sendRealTon()">
+            💎 ВЗНОС В АВТОРИТЕТ (0.1 TON)
+        </button>
+        
+        <button class="btn-action" style="border-color: #00ff00; color: #00ff00;" onclick="addToObshak()">
+            Сбросить в Общак
+        </button>
     </div>
 
     <div class="obshak-card">
         <div style="color: #888; font-size: 14px; text-transform: uppercase;">Наш Общак</div>
-        <div class="obshak-amount">1,245.50 TON</div>
+        <div id="obshak-display" class="obshak-amount">1245.50 TON</div>
         <div style="font-size: 11px; color: #ff0055;">Клянусь, завтра будет больше</div>
     </div>
 
     <div class="missions">
-        <h3 style="font-size: 12px; margin-bottom: 15px; color: #555;">БЛИЖАЙШИЕ ТЁРКИ:</h3>
-        
         <div class="mission-item">
-            <div class="mission-info">
-                <h4>Налёт на обменник</h4>
-                <p>КУШ: 0.050 TON</p>
+            <div style="flex:1">
+                <h4 style="margin:0; font-size:14px;">Налёт на обменник</h4>
+                <p style="margin:5px 0 0; color:#ff0055; font-size:12px;">КУШ: ~0.050 TON</p>
             </div>
-            <button class="btn-action" onclick="window.location.href='mission1.html'">В ДЕЛЕ</button>
-        </div>
-
-        <div class="mission-item" style="opacity: 0.4;">
-            <div class="mission-info">
-                <h4>Взлом сейфа</h4>
-                <p>Нужен ранг: Авторитет</p>
-            </div>
-            <button class="btn-action">🔒</button>
+            <button class="btn-action" style="width:auto" onclick="window.location.href='mission1.html'">В ДЕЛЕ</button>
         </div>
     </div>
 
-    <div id="ton-connect-btn" style="margin-top: 30px;"></div>
+    <div id="ton-connect-btn" style="margin-top: 20px;"></div>
     <div class="logout-btn" onclick="logout()">Сменить масть (Выйти)</div>
 
 <script>
 const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
     manifestUrl: 'https://leslav2025.github.io/Banda/tonconnect-manifest.json',
-    buttonRoot_id: 'ton-connect-btn'
+    buttonRootId: 'ton-connect-btn'
 });
 
-// Відображення збереженого куша
+// ТВОЯ АДРЕСА ДЛЯ ПРИЙОМУ ТОНІВ
+const MY_WALLET = "UQDXq1iAqu88tVRG62_k03kAXELu_1gzRBMye-VZoFRIRtWw";
+
+let obshakBase = parseFloat(localStorage.getItem('obshak_total') || '1245.50');
+
 function updateUI() {
     const savedLoot = localStorage.getItem('user_loot') || '0.000';
     document.getElementById('personal-loot').innerText = savedLoot + ' TON';
+    document.getElementById('obshak-display').innerText = obshakBase.toFixed(2) + ' TON';
+}
+
+// ФУНКЦІЯ РЕАЛЬНОЇ ТРАНЗАКЦІЇ
+async function sendRealTon() {
+    if (!tonConnectUI.connected) {
+        alert('Сначала подключи кошелёк, боец!');
+        return;
+    }
+
+    const transaction = {
+        validUntil: Math.floor(Date.now() / 1000) + 300, 
+        messages: [
+            {
+                address: MY_WALLET,
+                amount: "100000000", // 0.1 TON
+            }
+        ]
+    };
+
+    try {
+        const result = await tonConnectUI.sendTransaction(transaction);
+        alert('ЕСТЬ! 0.1 TON ушли в Общак. Ты теперь настоящий Авторитет!');
+        
+        // Бонус у грі за реальний внесок
+        obshakBase += 10.0; // Додаємо віртуальні 10 TON в общак як бонус
+        localStorage.setItem('obshak_total', obshakBase.toString());
+        updateUI();
+    } catch (e) {
+        alert('Сделка сорвалась. Проверь кошелёк.');
+    }
+}
+
+function addToObshak() {
+    const currentLoot = parseFloat(localStorage.getItem('user_loot') || '0');
+    if (currentLoot > 0) {
+        obshakBase += currentLoot;
+        localStorage.setItem('obshak_total', obshakBase.toString());
+        localStorage.setItem('user_loot', '0.000');
+        updateUI();
+        alert('Красава! Общак пополнен.');
+    }
 }
 
 tonConnectUI.onStatusChange(wallet => {
     if (wallet) {
-        const addr = wallet.account.address;
-        document.getElementById('user-address').innerText = 'ID: ' + addr.slice(0,8).toUpperCase();
+        document.getElementById('user-address').innerText = 'ID: ' + wallet.account.address.slice(0,10).toUpperCase();
         updateUI();
     } else {
         window.location.href = 'index.html';
