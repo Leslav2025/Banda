@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -9,13 +9,11 @@
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
         body { margin: 0; background: #050505; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
         
-        /* Панель зверху */
         .ui-panel { margin-top: 15px; background: rgba(20, 20, 20, 0.9); border: 2px solid #0088cc; border-radius: 15px; padding: 10px; width: 90%; max-width: 400px; text-align: center; font-family: 'Orbitron', sans-serif; }
         .score-box { color: #ffd700; font-size: 20px; }
 
         canvas { border: 2px solid #333; border-radius: 12px; margin-top: 10px; background: #000; touch-action: none; }
 
-        /* Модальне вікно "Реєстрація + Вибір" */
         #action-modal { 
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
             background: #0a0a0a; padding: 25px; border: 3px solid #0088cc; border-radius: 20px; 
@@ -23,8 +21,7 @@
         }
 
         #ton-connect-btn { margin: 20px 0; display: inline-block; }
-        
-        .path-selection { display: none; } /* Сховано, поки не підключено гаманець */
+        .path-selection { display: none; }
         
         .btn-choice { width: 100%; padding: 15px; margin-top: 10px; border-radius: 10px; border: none; font-weight: bold; font-family: 'Orbitron'; cursor: pointer; text-transform: uppercase; }
         .btn-banda { background: #0088cc; color: white; }
@@ -40,15 +37,15 @@
     <canvas id="gameCanvas" width="350" height="480"></canvas>
 
     <div id="action-modal">
-        <h2 id="modal-title" style="color:#0088cc; font-family:'Orbitron'; margin-bottom:10px;">КУШ В КИШЕНІ!</h2>
-        <p id="modal-desc">Щоб продовжити та обрати свою долю, підключи свій гаманець (Tonkeeper, Wallet тощо):</p>
+        <h2 id="modal-title" style="color:#0088cc; font-family:'Orbitron'; margin-bottom:10px;">КУШ В КАРМАНЕ!</h2>
+        <p id="modal-desc">Чтобы сохранить добычу и выбрать путь, предъяви свой кошелек:</p>
         
         <div id="ton-connect-btn"></div>
 
         <div id="path-options" class="path-selection">
-            <p style="color:#00ff00;">Гаманець підключено! Обирай шлях:</p>
+            <p style="color:#00ff00;">Кошелек на базе! Твой выбор:</p>
             <button class="btn-choice btn-banda" onclick="selectPath('banda')">ВСТУПИТЬ В БАНДУ</button>
-            <button class="btn-choice btn-kush" onclick="selectPath('kush')">ІДТИ ОДИНОЧКОЙ</button>
+            <button class="btn-choice btn-kush" onclick="selectPath('kush')">ИДТИ ОДИНОЧКОЙ</button>
         </div>
     </div>
 
@@ -63,21 +60,24 @@ const ctx = canvas.getContext('2d');
 const scoreEl = document.getElementById('score');
 const modal = document.getElementById('action-modal');
 const pathOptions = document.getElementById('path-options');
+const modalDesc = document.getElementById('modal-desc');
 
 let score = 0;
 let gameActive = true;
 let player = { x: 175, y: 240, targetX: 175, targetY: 240 };
 let coins = [];
 
-// Слідкуємо за статусом гаманця
+// СТРОГАЯ ПРОВЕРКА СТАТУСА
 tonConnectUI.onStatusChange(wallet => {
-    if (wallet) {
-        // Якщо гаманець підключено — показуємо кнопки вибору шляху
+    if (wallet && wallet.account) {
+        // Если реально подключен — убираем кнопку и описание, даем выбор
         document.getElementById('ton-connect-btn').style.display = 'none';
-        document.getElementById('modal-desc').style.display = 'none';
+        modalDesc.style.display = 'none';
         pathOptions.style.display = 'block';
     } else {
+        // Если нет — показываем только кнопку входа
         pathOptions.style.display = 'none';
+        modalDesc.style.display = 'block';
         document.getElementById('ton-connect-btn').style.display = 'inline-block';
     }
 });
