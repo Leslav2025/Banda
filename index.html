@@ -1,168 +1,181 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BANDA GAME | Авторизация</title>
+    <title>BANDA GAME | Базар</title>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
         
-        body { margin: 0; padding: 0; background: #000; color: white; font-family: Arial, sans-serif; overflow: hidden; touch-action: none; }
-        #game-canvas { display: block; opacity: 0.1; transition: opacity 0.5s; }
-
-        /* UI Layer */
-        #ui-layer { position: fixed; top: 20px; left: 20px; z-index: 10; pointer-events: none; font-family: 'Orbitron', sans-serif; }
-        .stat-box { margin-bottom: 10px; }
-        .label { font-size: 9px; color: #0088cc; text-transform: uppercase; letter-spacing: 1.5px; }
-        .value { font-size: 18px; display: block; }
+        body { margin: 0; padding: 0; background: #050505; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; }
         
-        /* Экран регистрации */
-        #reg-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 100;
-        }
-        .reg-card { 
-            text-align: center; border: 2px solid #0088cc; padding: 40px; 
-            border-radius: 20px; background: #0a0a0a; box-shadow: 0 0 30px #0088cc66;
-            max-width: 80%;
+        /* Кнопка гаманця зверху, як у вашому прикладі */
+        #ton-connect-button { margin-top: 15px; margin-bottom: 10px; z-index: 100; }
+
+        .ui-panel { 
+            background: rgba(20, 20, 20, 0.9); 
+            border: 2px solid #0088cc; 
+            border-radius: 15px; 
+            padding: 10px; 
+            width: 90%; 
+            max-width: 400px;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 10px;
         }
 
-        #ton-connect-btn { margin-top: 20px; display: inline-block; }
+        .stats-row { display: flex; justify-content: space-around; font-size: 16px; }
+        .score-box { color: #ffd700; }
+        .id-box { color: #0088cc; font-size: 12px; }
 
-        /* Модалка выбора */
-        #choice-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 1000; }
-        .modal-card { background: #111; border: 2px solid #0088cc; padding: 30px; border-radius: 20px; text-align: center; max-width: 320px; }
-        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-family: 'Orbitron', sans-serif; text-transform: uppercase; }
-        .btn-join { background: #0088cc; color: white; }
-        .btn-kush { background: #333; color: #ff4444; }
+        canvas { border: 3px solid #333; border-radius: 12px; background: #000; touch-action: none; }
+
+        /* Вікно вибору */
+        #choice-modal { 
+            display: none; 
+            position: fixed; 
+            top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); 
+            background: #111; 
+            padding: 25px; 
+            border: 3px solid #0088cc; 
+            border-radius: 20px; 
+            z-index: 1000; 
+            text-align: center; 
+            width: 80%; 
+        }
+
+        .btn-choice { 
+            width: 100%; padding: 15px; margin-top: 10px; 
+            border-radius: 10px; border: none; font-weight: bold; 
+            font-family: 'Orbitron'; cursor: pointer;
+        }
+        .btn-banda { background: #0088cc; color: white; }
+        .btn-kush { background: #333; color: #ff4757; }
     </style>
-    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 </head>
 <body>
 
-    <div id="reg-screen">
-        <div class="reg-card">
-            <h1 style="font-family:'Orbitron'; color:#0088cc; margin-top:0;">BANDA GAME</h1>
-            <p>Чтобы зайти на базар,<br>предъяви свой кошелек</p>
-            <div id="ton-connect-btn"></div> </div>
-    </div>
+    <div id="ton-connect-button"></div>
 
-    <div id="ui-layer">
-        <div class="stat-box">
-            <span class="label">ОБЩАК БАНДЫ</span>
-            <span id="total-pool" class="value">124.50 TON</span>
-        </div>
-        <div class="stat-box">
-            <span id="player-label" class="label">ИГРОК: АНОНИМ</span>
-            <span id="personal-balance" class="value">0.000</span>
+    <div class="ui-panel">
+        <div class="id-box" id="player-id">ID: НЕАВТОРИЗОВАНИЙ</div>
+        <div class="stats-row">
+            <div class="score-box">💰 КУШ: <span id="score">0.000</span> TON</div>
         </div>
     </div>
 
-    <canvas id="game-canvas"></canvas>
+    <canvas id="gameCanvas" width="350" height="450"></canvas>
 
     <div id="choice-modal">
-        <div class="modal-card">
-            <h2 style="color:#0088cc; font-family:'Orbitron';">КУШ СОБРАН!</h2>
-            <p style="font-size:14px; color:#888;">Ты набрал 0.010 TON. Решай судьбу.</p>
-            <button class="btn btn-join" onclick="choosePath('banda')">ВСТУПИТЬ В БАНДУ</button>
-            <button class="btn btn-kush" onclick="choosePath('kush')">ИДТИ ОДИНОЧКОЙ</button>
-        </div>
+        <h2 style="color:#0088cc; font-family:'Orbitron'">КУШ НАБРАНО!</h2>
+        <p>Ти назбирав 0.010 TON. Що далі?</p>
+        <button class="btn-choice btn-banda" onclick="selectPath('banda')">ВСТУПИТИ В БАНДУ</button>
+        <button class="btn-choice btn-kush" onclick="selectPath('kush')">ЗАБРАТИ ВСЕ СОБІ</button>
     </div>
 
-    <script>
-        const tonConnectUI = new TONConnectUI.TonConnectUI({
-            manifestUrl: 'https://leslav2025.github.io/Banda/tonconnect-manifest.json',
-            buttonRootId: 'ton-connect-btn'
-        });
+<script>
+// Ініціалізація TonConnect
+const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+    manifestUrl: 'https://leslav2025.github.io/Banda/tonconnect-manifest.json',
+    buttonRootId: 'ton-connect-button'
+});
 
-        const regScreen = document.getElementById('reg-screen');
-        const gameCanvas = document.getElementById('game-canvas');
-        const playerLabel = document.getElementById('player-label');
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('score');
+const playerIdEl = document.getElementById('player-id');
 
-        let gameActive = false;
+let score = 0;
+let gameActive = true;
+let player = { x: 175, y: 225, targetX: 175, targetY: 225 };
+let coins = [];
 
-        // Следим за входом
-        tonConnectUI.onStatusChange(wallet => {
-            if (wallet) {
-                regScreen.style.display = 'none';
-                gameCanvas.style.opacity = '1';
-                gameActive = true;
-                
-                const addr = wallet.account.address;
-                playerLabel.innerText = "ИГРОК: " + addr.substring(0, 4) + "..." + addr.substring(addr.length - 4);
-                
-                const path = localStorage.getItem('user_path');
-                if (path === 'banda') window.location.href = "banda.html";
-                if (path === 'kush') window.location.href = "kush.html";
-            } else {
-                regScreen.style.display = 'flex';
-                gameCanvas.style.opacity = '0.1';
+// Перевірка статусу гаманця
+tonConnectUI.onStatusChange(wallet => {
+    if (wallet) {
+        const addr = wallet.account.address;
+        playerIdEl.innerText = "ID: " + addr.substring(0, 4) + "..." + addr.substring(addr.length - 4);
+        
+        // Авто-перехід, якщо вибір вже був зроблений раніше
+        const saved = localStorage.getItem('user_path');
+        if (saved === 'banda') window.location.href = 'banda.html';
+        if (saved === 'kush') window.location.href = 'kush.html';
+    } else {
+        playerIdEl.innerText = "ID: НЕАВТОРИЗОВАНИЙ";
+    }
+});
+
+// Управління тачем (як у вашому коді)
+canvas.addEventListener('pointerdown', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    player.targetX = e.clientX - rect.left;
+    player.targetY = e.clientY - rect.top;
+});
+
+function spawnCoin() {
+    if (coins.length < 5) {
+        coins.push({ x: Math.random() * (canvas.width - 20) + 10, y: Math.random() * (canvas.height - 20) + 10 });
+    }
+}
+setInterval(spawnCoin, 1500);
+
+function update() {
+    if (!gameActive) return;
+
+    // Рух гравця до точки натискання
+    player.x += (player.targetX - player.x) * 0.1;
+    player.y += (player.targetY - player.y) * 0.1;
+
+    // Збір монет
+    coins.forEach((c, i) => {
+        if (Math.hypot(player.x - c.x, player.y - c.y) < 25) {
+            coins.splice(i, 1);
+            score += 0.001;
+            scoreEl.innerText = score.toFixed(3);
+            
+            if (score >= 0.010) {
                 gameActive = false;
-            }
-        });
-
-        // ГЕЙМПЛЕЙ
-        const canvas = document.getElementById('game-canvas');
-        const ctx = canvas.getContext('2d');
-        let balance = 0.000;
-        let modalShown = false;
-
-        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-        window.addEventListener('resize', resize);
-        resize();
-
-        const player = { x: canvas.width/2, y: canvas.height/2, targetX: canvas.width/2, targetY: canvas.height/2 };
-        const coins = [];
-
-        window.addEventListener('pointerdown', (e) => { 
-            if(gameActive) { player.targetX = e.clientX; player.targetY = e.clientY; } 
-        });
-
-        function spawnCoin() { 
-            if (gameActive && coins.length < 8) coins.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height}); 
-        }
-        setInterval(spawnCoin, 1000);
-
-        function update() {
-            if (!gameActive) return;
-            player.x += (player.targetX - player.x) * 0.1;
-            player.y += (player.targetY - player.y) * 0.1;
-            coins.forEach((c, i) => {
-                if (Math.hypot(player.x - c.x, player.y - c.y) < 30) {
-                    coins.splice(i, 1);
-                    balance += 0.001;
-                    document.getElementById('personal-balance').innerText = balance.toFixed(3);
-                }
-            });
-            if (balance >= 0.010 && !modalShown) {
-                gameActive = false; modalShown = true;
-                document.getElementById('choice-modal').style.display = 'flex';
+                document.getElementById('choice-modal').style.display = 'block';
             }
         }
+    });
+}
 
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Сетка
-            ctx.strokeStyle = "#111"; ctx.lineWidth = 1;
-            for(let i=0; i<canvas.width; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
-            for(let i=0; i<canvas.height; i+=50) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
-            
-            // Монеты
-            ctx.fillStyle = "#ffd700";
-            coins.forEach(c => { ctx.beginPath(); ctx.arc(c.x, c.y, 10, 0, Math.PI*2); ctx.fill(); });
-            
-            // Игрок
-            ctx.fillStyle = "#ffd700"; ctx.beginPath(); ctx.arc(player.x, player.y, 20, 0, Math.PI*2); ctx.fill();
-            ctx.strokeStyle = "#0088cc"; ctx.lineWidth = 3; ctx.stroke();
-        }
+function draw() {
+    ctx.fillStyle = '#050505';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        function choosePath(path) {
-            localStorage.setItem('user_path', path);
-            window.location.href = path + ".html";
-        }
+    // Малюємо сітку
+    ctx.strokeStyle = '#111';
+    for(let i=0; i<canvas.width; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
 
-        function loop() { update(); draw(); requestAnimationFrame(loop); }
-        loop();
-    </script>
+    // Малюємо монети
+    ctx.fillStyle = '#ffd700';
+    coins.forEach(c => {
+        ctx.beginPath(); ctx.arc(c.x, c.y, 8, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.stroke();
+    });
+
+    // Малюємо гравця (синій як у танку)
+    ctx.fillStyle = '#0088cc';
+    ctx.beginPath(); ctx.arc(player.x, player.y, 15, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+}
+
+function selectPath(path) {
+    localStorage.setItem('user_path', path);
+    window.location.href = path + '.html';
+}
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
 </body>
 </html>
