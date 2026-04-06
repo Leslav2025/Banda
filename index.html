@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>БАНДА | Начало пути</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+        
+        body {
+            margin: 0; padding: 0;
+            background: #0a0a0a;
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* Игровое поле - БАЗАР */
+        #game-canvas {
+            display: block;
+            background: linear-gradient(to bottom, #1a1a1a, #050505);
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            cursor: crosshair;
+        }
+
+        /* Интерфейс (UI) */
+        #ui {
+            position: fixed; top: 20px; left: 20px;
+            z-index: 10; pointer-events: none;
+        }
+
+        #balance-container {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            color: #00ff00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .label { font-size: 12px; color: #888; display: block; }
+
+        /* Эффект урона */
+        #damage-flash {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: red; opacity: 0; pointer-events: none;
+            transition: opacity 0.1s; z-index: 5;
+        }
+
+        /* Экран ВЫБОРА */
+        #choice-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none; align-items: center; justify-content: center;
+            z-index: 100;
+        }
+
+        .modal-card {
+            background: #111; border: 2px solid #0088cc;
+            padding: 30px; border-radius: 20px; text-align: center;
+            max-width: 300px; box-shadow: 0 0 30px #0088cc66;
+        }
+
+        .btn {
+            display: block; width: 100%; padding: 15px; margin: 10px 0;
+            border: none; border-radius: 10px; font-weight: bold;
+            cursor: pointer; font-family: 'Orbitron', sans-serif;
+        }
+
+        .btn-join { background: #0088cc; color: white; }
+        .btn-obshak { background: #333; color: #888; }
+
+        #controls-hint {
+            position: fixed; bottom: 20px; width: 100%;
+            text-align: center; color: #444; font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="damage-flash"></div>
+
+    <div id="ui">
+        <span class="label">ИГРОВОЙ СЧЕТ TON</span>
+        <div id="balance-container">0.000</div>
+    </div>
+
+    <canvas id="game-canvas"></canvas>
+
+    <div id="controls-hint">ЖМИ НА ЭКРАН ИЛИ СТРЕЛКИ, ЧТОБЫ БЕЖАТЬ ПО БАЗАРУ</div>
+
+    <div id="choice-modal">
+        <div class="modal-card">
+            <h2 style="color:#0088cc; font-family:'Orbitron';">ТЫ НАБРАЛ КУШ!</h2>
+            <p>Конкуренты на хвосте. <br>Что делаешь?</p>
+            <button class="btn btn-join" onclick="joinBand()">ВСТУПИТЬ В БАНДУ<br><small>0.01+ TON в Wallet</small></button>
+            <button class="btn btn-obshak" onclick="giveToObshak()">ОТДАТЬ В ОБЩАК<br><small>Продолжить игру</small></button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const balanceEl = document.getElementById('balance-container');
+        const flash = document.getElementById('damage-flash');
+        const modal = document.getElementById('choice-modal');
+
+        let balance = 0.000;
+        let gameActive = true;
+        let choiceTriggered = false;
+
+        // Настройка канваса
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Игрок
+        const player = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            size: 40,
+            targetX: canvas.width / 2,
+            targetY: canvas.height / 2
+        };
+
+        const coins = [];
+        const enemies = [];
+        const bullets = [];
+
+        // Управление кликом/тапом
+        window.addEventListener('pointerdown', (e) => {
+            player.targetX = e.clientX;
+            player.targetY = e.clientY;
+        });
+
+        // Создание объектов
+        function spawnCoin() {
+            if (coins.length < 5) {
+                coins.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, size: 15 });
+            }
+        }
+
+        function spawnEnemy() {
+            if (enemies.length < 2 && balance > 0.002) {
+                enemies.push({ 
+                    x: Math.random() > 0.5 ? -50 : canvas.width + 50, 
+                    y: Math.random() * canvas.height,
+                    lastShot: 0
+                });
+            }
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            // Движение игрока
+            player.x += (player.targetX - player.x) * 0.1;
+            player.y += (player.targetY - player.y) * 0.1;
+
+            // Сбор монет
+            coins.forEach((coin, index) => {
+                const dist = Math.hypot(player.x - coin.x, player.y - coin.y);
+                if (dist < 30) {
+                    coins.splice(index, 1);
+                    balance += 0.001;
+                    updateUI();
+                }
+            });
+
+            // Враги и пули
+            enemies.forEach((en, index) => {
+                const now = Date.now();
+                if (now - en.lastShot > 2000) {
+                    const angle = Math.atan2(player.y - en.y, player.x - en.x);
+                    bullets.push({ x: en.x, y: en.y, vx: Math.cos(angle) * 5, vy: Math.sin(angle) * 5 });
+                    en.lastShot = now;
+                }
+            });
+
+            bullets.forEach((b, index) => {
+                b.x += b.vx;
+                b.y += b.vy;
+                const dist = Math.hypot(player.x - b.x, player.y - b.y);
+                if (dist < 20) {
+                    bullets.splice(index, 1);
+                    takeDamage();
+                }
+                if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) bullets.splice(index, 1);
+            });
+
+            if (balance >= 0.010 && !choiceTriggered) {
+                triggerChoice();
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Монеты
+            ctx.fillStyle = "#ffd700";
+            coins.forEach(c => {
+                ctx.beginPath(); ctx.arc(c.x, c.y, c.size, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = "white"; ctx.stroke();
+            });
+
+            // Пули
+            ctx.fillStyle = "red";
+            bullets.forEach(b => {
+                ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI*2); ctx.fill();
+            });
+
+            // Враги (силуэты)
+            ctx.fillStyle = "#333";
+            enemies.forEach(en => {
+                ctx.fillRect(en.x - 20, en.y - 20, 40, 40);
+                ctx.fillStyle = "red";
+                ctx.fillRect(en.x - 10, en.y - 10, 5, 5); // Глаза
+                ctx.fillRect(en.x + 5, en.y - 10, 5, 5);
+                ctx.fillStyle = "#333";
+            });
+
+            // Игрок (Монета в костюме)
+            ctx.fillStyle = "#ffd700"; // Золото
+            ctx.beginPath(); ctx.arc(player.x, player.y, 25, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = "black"; ctx.lineWidth = 2; ctx.stroke();
+            // Галстук
+            ctx.fillStyle = "red";
+            ctx.beginPath(); ctx.moveTo(player.x, player.y + 5); ctx.lineTo(player.x-5, player.y+20); ctx.lineTo(player.x+5, player.y+20); ctx.fill();
+        }
+
+        function updateUI() {
+            balanceEl.innerText = balance.toFixed(3);
+        }
+
+        function takeDamage() {
+            if (balance > 0) {
+                balance -= 0.002;
+                if (balance < 0) balance = 0;
+                updateUI();
+                flash.style.opacity = 0.5;
+                setTimeout(() => flash.style.opacity = 0, 100);
+            }
+        }
+
+        function triggerChoice() {
+            choiceTriggered = true;
+            gameActive = false;
+            modal.style.display = 'flex';
+        }
+
+        function joinBand() {
+            window.open("https://t.me/wallet?startapp=ton", "_blank");
+            alert("Перейди в Wallet и занеси долю в Банду!");
+            giveToObshak(); // Закрываем модалку
+        }
+
+        function giveToObshak() {
+            modal.style.display = 'none';
+            balance = 0;
+            choiceTriggered = false;
+            gameActive = true;
+            updateUI();
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        setInterval(spawnCoin, 1500);
+        setInterval(spawnEnemy, 3000);
+        loop();
+    </script>
+</body>
+</html>
