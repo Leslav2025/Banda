@@ -9,11 +9,10 @@
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
         body { margin: 0; background: #080808; color: #e0e0e0; font-family: 'Orbitron', sans-serif; display: flex; flex-direction: column; align-items: center; }
         .header { width: 100%; padding: 25px 20px; background: linear-gradient(180deg, #ff005522 0%, transparent 100%); border-bottom: 1px solid #ff0055; text-align: center; box-sizing: border-box; }
-        .rank-badge { display: inline-block; padding: 5px 15px; background: #ff0055; color: white; border-radius: 20px; font-size: 12px; text-transform: uppercase; margin-top: 5px; box-shadow: 0 0 15px #ff0055; }
+        .rank-badge { display: inline-block; padding: 5px 15px; background: #ff0055; color: white; border-radius: 20px; font-size: 12px; text-transform: uppercase; margin-top: 5px; box-shadow: 0 0 15px #ff0055; transition: 0.5s; }
         .personal-stats { margin-top: 20px; text-align: center; width: 90%; }
         #personal-loot { color: #00ff00; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px rgba(0,255,0,0.3); }
-        .obshak-card { width: 90%; max-width: 400px; background: #111; border: 2px solid #222; border-radius: 15px; margin-top: 20px; padding: 20px; text-align: center; box-sizing: border-box; cursor: pointer; transition: 0.3s; }
-        .obshak-card:active { transform: scale(0.98); border-color: #ffd700; }
+        .obshak-card { width: 90%; max-width: 400px; background: #111; border: 2px solid #222; border-radius: 15px; margin-top: 20px; padding: 20px; text-align: center; box-sizing: border-box; cursor: pointer; }
         .obshak-amount { color: #ffd700; font-size: 32px; font-weight: bold; margin: 10px 0; }
         .btn-action { background: transparent; border: 1px solid #ff0055; color: #ff0055; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-family: 'Orbitron'; text-transform: uppercase; font-size: 11px; width: 100%; margin-top: 10px; transition: 0.3s; }
         .btn-real-ton { border-color: #ffd700; color: #ffd700; animation: pulse-gold 2s infinite; font-weight: bold; }
@@ -21,9 +20,8 @@
         .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .shop-item { background: #151515; padding: 10px; border-radius: 10px; border: 1px solid #333; text-align: center; }
         .missions { width: 90%; max-width: 400px; margin-top: 30px; }
-        .mission-item { background: #151515; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #ff0055; display: flex; justify-content: space-between; align-items: center; }
+        .mission-item { background: #151515; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #ff0055; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
         
-        /* Модалка лидеров */
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.95); }
         .modal-content { background: #111; margin: 20% auto; padding: 20px; border: 1px solid #ffd700; width: 85%; max-width: 320px; border-radius: 15px; text-align: center; }
         .leader-item { display: flex; justify-content: space-between; padding: 10px 5px; border-bottom: 1px solid #222; font-size: 13px; }
@@ -73,9 +71,15 @@
             <div style="flex:1"><h4>Налёт на обменник</h4><p style="color:#ff0055; font-size:12px;">КУШ: ~0.050 TON</p></div>
             <button class="btn-action" style="width:auto" onclick="window.location.href='mission1.html'">В ДЕЛЕ</button>
         </div>
-        <div id="safe-mission" class="mission-item" style="opacity: 0.3;">
-            <div style="flex:1"><h4>Взлом сейфа</h4><p id="safe-text" style="color:#444; font-size:11px;">Нужен ранг: Авторитет</p></div>
-            <button class="btn-action" style="width:auto">🔒</button>
+        
+        <div id="safe-mission" class="mission-item" style="opacity: 0.3; border-left-color: #444;">
+            <div style="flex:1">
+                <h4 id="safe-title">Взлом сейфа</h4>
+                <p id="safe-text" style="color:#444; font-size:11px;">Нужен ранг: Авторитет</p>
+            </div>
+            <div id="safe-btn-container">
+                <button class="btn-action" style="width:auto; border-color: #444; color: #444;">🔒</button>
+            </div>
         </div>
     </div>
 
@@ -104,7 +108,7 @@ const MY_WALLET = "UQDXq1iAqu88tVRG62_k03kAXELu_1gzRBMye-VZoFRIRtWw";
 
 function updateUI() {
     const savedLoot = localStorage.getItem('user_loot') || '0.000';
-    const obshakTotal = parseFloat(localStorage.getItem('obshak_total') || '1246.53');
+    let obshakTotal = parseFloat(localStorage.getItem('obshak_total') || '1246.53');
     
     document.getElementById('personal-loot').innerText = savedLoot + ' TON';
     document.getElementById('obshak-display').innerText = obshakTotal.toFixed(2) + ' TON';
@@ -112,16 +116,23 @@ function updateUI() {
     const rankBadge = document.getElementById('rank-display');
     const safeMission = document.getElementById('safe-mission');
     const safeText = document.getElementById('safe-text');
+    const safeBtnContainer = document.getElementById('safe-btn-container');
 
+    // ЛОГИКА РАНГОВ И СЕЙФА
     if (obshakTotal >= 1260 || localStorage.getItem('hasLockpick')) {
         rankBadge.innerText = "Авторитет";
         rankBadge.style.background = "#ffd700";
+        rankBadge.style.boxShadow = "0 0 20px #ffd700";
+        
         safeMission.style.opacity = "1";
+        safeMission.style.borderLeftColor = "#ffd700";
         safeText.innerText = "КУШ: 2.500 TON";
         safeText.style.color = "#ffd700";
+        safeBtnContainer.innerHTML = `<button class="btn-action" style="width:auto; border-color:#ffd700; color:#ffd700;" onclick="window.location.href='safe.html'">В ДЕЛЕ</button>`;
     } else if (obshakTotal >= 1250) {
         rankBadge.innerText = "Бригадир";
         rankBadge.style.background = "#00ff00";
+        rankBadge.style.boxShadow = "0 0 15px #00ff00";
     }
 }
 
