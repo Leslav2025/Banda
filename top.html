@@ -1,1 +1,35 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ТОП АВТОРИТЕТІВ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        body { margin: 0; background: #050505; color: #fff; font-family: 'Orbitron', sans-serif; display: flex; flex-direction: column; align-items: center; padding-top: 40px; }
+        .header { color: #ffd700; text-shadow: 0 0 10px #ffd700; font-size: 24px; margin-bottom: 30px; }
+        .top-list { width: 90%; max-width: 400px; background: #111; border: 1px solid #333; border-radius: 15px; overflow: hidden; }
+        .player { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #222; font-size: 14px; }
+        .player:nth-child(1) { background: rgba(255, 215, 0, 0.1); color: #ffd700; }
+        .rank { color: #888; margin-right: 10px; }
+        .amount { color: #00ff00; }
+        .back-btn { margin-top: 30px; color: #ff0055; cursor: pointer; background: none; border: none; font-family: 'Orbitron'; }
+    </style>
+</head>
+<body>
+    <div class="header">ТОП АВТОРИТЕТІВ</div>
+    <div class="top-list">
+        <div class="player"><span><span class="rank">#1</span> UQAW...r5cz</span><span class="amount">15.40 TON</span></div>
+        <div class="player"><span><span class="rank">#2</span> UQDX...Ww88</span><span class="amount">12.10 TON</span></div>
+        <div class="player"><span><span class="rank">#3</span> EQB1...p9Zx</span><span class="amount">8.05 TON</span></div>
+        <div class="player"><span><span class="rank">#4</span> UQDq...nhh9</span><span class="amount">5.22 TON</span></div>
+        <div class="player"><span><span class="rank">#5</span> Твій нік</span><span id="user-score" class="amount">0.00 TON</span></div>
+    </div>
+    <button class="back-btn" onclick="window.location.href='banda.html'">НАЗАД У БАНДУ</button>
 
+    <script>
+        // Показуємо результат поточного гравця в топі
+        document.getElementById('user-score').innerText = (localStorage.getItem('user_loot') || '0.000') + ' TON';
+    </script>
+</body>
+</html>
