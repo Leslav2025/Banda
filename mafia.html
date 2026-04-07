@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ЛОТЕРЕЯ МАФИЯ | BANDA</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        body { margin: 0; background: #050505; color: #fff; font-family: 'Orbitron', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        .header { color: #ff0055; text-shadow: 0 0 10px #ff0055; font-size: 24px; margin-bottom: 30px; }
+        .cards-container { display: flex; gap: 15px; perspective: 1000px; }
+        .card { width: 90px; height: 130px; background: #1a1a1a; border: 2px solid #444; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 30px; transition: 0.5s; transform-style: preserve-3d; }
+        .card.flipped { transform: rotateY(180deg); border-color: #ffd700; background: #222; }
+        .btn-play { margin-top: 40px; padding: 15px 30px; background: transparent; border: 2px solid #ffd700; color: #ffd700; border-radius: 8px; cursor: pointer; text-transform: uppercase; font-family: 'Orbitron'; }
+        .jackpot-display { color: #888; font-size: 12px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">ЛОТЕРЕЯ МАФИЯ</div>
+    <div id="status" style="margin-bottom: 20px; font-size: 14px; color: #ffd700;">ВЫБЕРИ СВОЮ КАРТУ</div>
+
+    <div class="cards-container" id="deck">
+        <div class="card" onclick="chooseCard(0)">🕴️</div>
+        <div class="card" onclick="chooseCard(1)">🕴️</div>
+        <div class="card" onclick="chooseCard(2)">🕴️</div>
+    </div>
+
+    <div class="jackpot-display">ДЖЕКПОТ: <span id="jackpot" style="color:#ffd700">15.5 TON</span></div>
+    <button class="btn-play" onclick="resetGame()">НОВЫЙ БИЛЕТ (0.1 TON)</button>
+    <button class="btn-play" style="border-color: #444; color: #444; font-size: 10px;" onclick="window.location.href='banda.html'">НАЗАД</button>
+
+<script>
+    let canPlay = true;
+    const results = ['💰', '❌', '❌']; // Один выигрыш, два проигрыша
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function chooseCard(index) {
+        if (!canPlay) return;
+        canPlay = false;
+
+        const currentResults = shuffle([...results]);
+        const cards = document.querySelectorAll('.card');
+        
+        cards[index].classList.add('flipped');
+        cards[index].innerText = currentResults[index];
+
+        if (currentResults[index] === '💰') {
+            document.getElementById('status').innerText = "КРАСАВА! КУШ ТВОЙ!";
+            let currentLoot = parseFloat(localStorage.getItem('user_loot') || '0');
+            localStorage.setItem('user_loot', (currentLoot + 0.2).toFixed(3));
+        } else {
+            document.getElementById('status').innerText = "МАСЛИНУ ПОЙМАЛ... МИМО.";
+            document.getElementById('status').style.color = "#ff0055";
+        }
+    }
+
+    function resetGame() {
+        canPlay = true;
+        document.getElementById('status').innerText = "ВЫБЕРИ СВОЮ КАРТУ";
+        document.getElementById('status').style.color = "#ffd700";
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            card.classList.remove('flipped');
+            card.innerText = '🕴️';
+        });
+    }
+</script>
+</body>
+</html>
