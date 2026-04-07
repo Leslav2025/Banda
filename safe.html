@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ВЗЛОМ СЕЙФА | BANDA</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        body { margin: 0; background: #0a0a0a; color: #fff; font-family: 'Orbitron', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        .lock-container { position: relative; width: 250px; height: 250px; border: 8px solid #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        .target-zone { position: absolute; width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 215, 0, 0.3); border: 2px solid #ffd700; }
+        .indicator { position: absolute; width: 4px; height: 100px; background: #ff0055; bottom: 50%; left: calc(50% - 2px); transform-origin: bottom center; transition: transform 0.05s linear; }
+        .status-dots { margin-top: 40px; display: flex; gap: 15px; }
+        .dot { width: 15px; height: 15px; border-radius: 50%; background: #222; border: 1px dashed #444; }
+        .dot.active { background: #ffd700; box-shadow: 0 0 10px #ffd700; border-style: solid; }
+        .btn-tap { margin-top: 50px; padding: 20px 40px; background: transparent; border: 2px solid #ffd700; color: #ffd700; font-family: 'Orbitron'; font-size: 18px; border-radius: 10px; cursor: pointer; text-transform: uppercase; }
+        .btn-tap:active { transform: scale(0.95); background: rgba(255, 215, 0, 0.1); }
+        .info { margin-bottom: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="info">РАНГ: АВТОРИТЕТ | МИССИЯ: СЕЙФ<br>ОСТАНОВИ СТРЕЛКУ В ЖЕЛТОЙ ЗОНЕ (3 РАЗА)</div>
+
+    <div class="lock-container" id="lock">
+        <div class="target-zone" id="target"></div>
+        <div class="indicator" id="arrow"></div>
+    </div>
+
+    <div class="status-dots">
+        <div class="dot" id="dot1"></div>
+        <div class="dot" id="dot2"></div>
+        <div class="dot" id="dot3"></div>
+    </div>
+
+    <button class="btn-tap" onclick="tryLock()">ВЗЛОМАТЬ</button>
+
+<script>
+    let currentAngle = 0;
+    let targetAngle = Math.random() * 360;
+    let speed = 5;
+    let stage = 0;
+    let isMoving = true;
+
+    function moveArrow() {
+        if (!isMoving) return;
+        currentAngle = (currentAngle + speed) % 360;
+        document.getElementById('arrow').style.transform = `rotate(${currentAngle}deg)`;
+        
+        // Позиционируем зону цели
+        let rad = (targetAngle - 90) * (Math.PI / 180);
+        let x = 105 * Math.cos(rad);
+        let y = 105 * Math.sin(rad);
+        document.getElementById('target').style.transform = `translate(${x}px, ${y}px)`;
+        
+        requestAnimationFrame(moveArrow);
+    }
+
+    function tryLock() {
+        if (!isMoving) return;
+
+        let diff = Math.abs(currentAngle - targetAngle);
+        if (diff < 15 || diff > 345) { // Попадание
+            stage++;
+            document.getElementById('dot' + stage).classList.add('active');
+            speed += 2; // Ускоряем
+            targetAngle = Math.random() * 360;
+            
+            if (stage === 3) {
+                isMoving = false;
+                alert('СЕЙФ ПУСТ! Твой куш: 2.500 TON');
+                let currentLoot = parseFloat(localStorage.getItem('user_loot') || '0');
+                localStorage.setItem('user_loot', (currentLoot + 2.5).toFixed(3));
+                window.location.href = 'banda.html';
+            }
+        } else {
+            alert('Сработала сигналка! Уходим!');
+            window.location.href = 'banda.html';
+        }
+    }
+
+    moveArrow();
+</script>
+</body>
+</html>
