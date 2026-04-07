@@ -1,178 +1,112 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BANDA | Малина</title>
-    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <title>МАЛИНА | BANDA</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-        body { margin: 0; background: #080808; color: #e0e0e0; font-family: 'Orbitron', sans-serif; display: flex; flex-direction: column; align-items: center; }
-        .header { width: 100%; padding: 25px 20px; background: linear-gradient(180deg, #ff005522 0%, transparent 100%); border-bottom: 1px solid #ff0055; text-align: center; box-sizing: border-box; }
-        .rank-badge { display: inline-block; padding: 5px 15px; background: #ff0055; color: white; border-radius: 20px; font-size: 12px; text-transform: uppercase; margin-top: 5px; box-shadow: 0 0 15px #ff0055; transition: 0.5s; }
-        .personal-stats { margin-top: 20px; text-align: center; width: 90%; }
-        #personal-loot { color: #00ff00; font-size: 28px; font-weight: bold; text-shadow: 0 0 10px rgba(0,255,0,0.3); }
-        .obshak-card { width: 90%; max-width: 400px; background: #111; border: 2px solid #222; border-radius: 15px; margin-top: 20px; padding: 20px; text-align: center; box-sizing: border-box; cursor: pointer; }
-        .obshak-amount { color: #ffd700; font-size: 32px; font-weight: bold; margin: 10px 0; }
-        .btn-action { background: transparent; border: 1px solid #ff0055; color: #ff0055; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-family: 'Orbitron'; text-transform: uppercase; font-size: 11px; width: 100%; margin-top: 10px; transition: 0.3s; }
-        .btn-real-ton { border-color: #ffd700; color: #ffd700; animation: pulse-gold 2s infinite; font-weight: bold; }
-        @keyframes pulse-gold { 0% { box-shadow: 0 0 5px #ffd700; } 50% { box-shadow: 0 0 20px #ffd700; } 100% { box-shadow: 0 0 5px #ffd700; } }
-        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .shop-item { background: #151515; padding: 10px; border-radius: 10px; border: 1px solid #333; text-align: center; }
-        .missions { width: 90%; max-width: 400px; margin-top: 30px; }
-        .mission-item { background: #151515; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #ff0055; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
+        body { margin: 0; background: #050505; color: #fff; font-family: 'Orbitron', sans-serif; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; }
         
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.95); }
-        .modal-content { background: #111; margin: 20% auto; padding: 20px; border: 1px solid #ffd700; width: 85%; max-width: 320px; border-radius: 15px; text-align: center; }
-        .leader-item { display: flex; justify-content: space-between; padding: 10px 5px; border-bottom: 1px solid #222; font-size: 13px; }
-        .gold-text { color: #ffd700; font-weight: bold; }
-        .logout-btn { margin-top: 30px; color: #444; font-size: 12px; cursor: pointer; padding-bottom: 30px; }
+        .header-box { text-align: center; margin-top: 20px; }
+        .title { color: #ff0055; font-size: 28px; text-shadow: 0 0 15px #ff0055; margin: 0; }
+        .rank-badge { background: #ff0055; padding: 5px 15px; border-radius: 20px; font-size: 12px; margin-top: 5px; display: inline-block; box-shadow: 0 0 10px #ff0055; }
+
+        .loot-display { margin-top: 30px; text-align: center; }
+        .loot-label { font-size: 10px; color: #888; text-transform: uppercase; }
+        .loot-val { font-size: 32px; color: #00ff00; display: block; text-shadow: 0 0 10px rgba(0,255,0,0.5); }
+
+        .actions { width: 90%; margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .btn { padding: 15px; border-radius: 10px; border: 1px solid #ffd700; background: transparent; color: #ffd700; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-green { border-color: #00ff00; color: #00ff00; }
+
+        .market-title { align-self: flex-start; margin-left: 5%; margin-top: 30px; font-size: 12px; color: #555; text-transform: uppercase; }
+        .market-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 90%; margin-top: 10px; }
+        .item-card { background: #111; border: 1px solid #333; border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .item-card:active { transform: scale(0.95); background: #1a1a1a; }
+        .item-icon { font-size: 24px; display: block; margin-bottom: 5px; }
+        .item-name { font-size: 10px; color: #888; display: block; }
+        .item-price { font-size: 14px; color: #ffd700; margin-top: 5px; display: block; }
+
+        .obshak-box { width: 90%; background: #0a0a0a; border: 1px solid #222; border-radius: 15px; margin-top: 30px; padding: 20px; text-align: center; }
+        .obshak-label { font-size: 12px; color: #888; }
+        .obshak-val { font-size: 26px; color: #ffd700; display: block; margin: 10px 0; }
+        
+        .top-link { margin-top: 20px; color: #444; font-size: 10px; text-decoration: underline; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1 style="margin:0; font-size: 28px; color: #ff0055; letter-spacing: 3px;">МАЛИНА</h1>
-        <div id="rank-display" class="rank-badge">Боец</div>
-        <p id="user-address" style="font-size: 10px; color: #444; margin-top: 10px;">ID: LOADING...</p>
+    <div class="header-box">
+        <h1 class="title">МАЛИНА</h1>
+        <div id="user-rank" class="rank-badge">БОЄЦЬ</div>
     </div>
 
-    <div class="personal-stats">
-        <span style="color: #888; font-size: 12px;">Твой личный куш:</span>
-        <div id="personal-loot">0.000 TON</div>
-        <button class="btn-action btn-real-ton" onclick="sendRealTon(0.1, 'Взнос в Авторитет')">💎 ВЗНОС В АВТОРИТЕТ (0.1 TON)</button>
-        <button class="btn-action" style="border-color: #00ff00; color: #00ff00;" onclick="addToObshak()">Сбросить в Общак</button>
+    <div class="loot-display">
+        <span class="loot-label">Твій личний куш:</span>
+        <span id="user-loot" class="loot-val">0.000 TON</span>
     </div>
 
-    <div style="width: 90%; max-width: 400px; margin-top: 25px;">
-        <h3 style="font-size: 12px; color: #555;">ЧЕРНЫЙ РЫНОК:</h3>
-        <div class="shop-grid">
-            <div class="shop-item">
-                <div style="font-size: 20px;">🎭</div>
-                <div style="font-size: 10px; margin: 5px 0;">МАСКА</div>
-                <button class="btn-action" style="font-size: 9px; border-color: #ffd700; color: #ffd700;" onclick="sendRealTon(0.2, 'Маска')">0.2 TON</button>
-            </div>
-            <div class="shop-item">
-                <div style="font-size: 20px;">🔑</div>
-                <div style="font-size: 10px; margin: 5px 0;">ОТМЫЧКА</div>
-                <button class="btn-action" style="font-size: 9px; border-color: #ffd700; color: #ffd700;" onclick="sendRealTon(0.5, 'Отмычка')">0.5 TON</button>
-            </div>
+    <div class="actions">
+        <button class="btn" onclick="window.location.href='mafia.html'">🎰 ЛОТЕРЕЯ МАФІЯ</button>
+        <button class="btn-green" onclick="alert('Общак поповнено!')">СБРОСИТЬ В ОБЩАК</button>
+    </div>
+
+    <div class="market-title">ЧЕРНИЙ РИНОК:</div>
+    <div class="market-grid">
+        <div class="item-card" onclick="buyItem('mask', 0.2)">
+            <span class="item-icon">🎭</span>
+            <span class="item-name">МАСКА</span>
+            <span class="item-price">0.2 TON</span>
+        </div>
+        <div class="item-card" onclick="buyItem('key', 0.5)">
+            <span class="item-icon">🔑</span>
+            <span class="item-name">ВІДМИЧКА</span>
+            <span class="item-price">0.5 TON</span>
         </div>
     </div>
 
-    <div class="obshak-card" onclick="showLeaders()">
-        <div style="color: #888; font-size: 11px;">НАШ ОБЩАК (нажми на цифры)</div>
-        <div id="obshak-display" class="obshak-amount">1245.50 TON</div>
-        <div style="font-size: 10px; color: #ff0055;">Клянусь, завтра будет больше</div>
+    <div class="obshak-box">
+        <span class="obshak-label">НАШ ОБЩАК (нажми на цифри)</span>
+        <span class="obshak-val" onclick="window.location.href='safe.html'">1246.53 TON</span>
+        <span style="color: #ff0055; font-size: 10px;">Клянусь, завтра буде більше</span>
     </div>
 
-    <div class="missions">
-        <div class="mission-item">
-            <div style="flex:1"><h4>Налёт на обменник</h4><p style="color:#ff0055; font-size:12px;">КУШ: ~0.050 TON</p></div>
-            <button class="btn-action" style="width:auto" onclick="window.location.href='mission1.html'">В ДЕЛЕ</button>
-        </div>
-        
-        <div id="safe-mission" class="mission-item" style="opacity: 0.3; border-left-color: #444;">
-            <div style="flex:1">
-                <h4 id="safe-title">Взлом сейфа</h4>
-                <p id="safe-text" style="color:#444; font-size:11px;">Нужен ранг: Авторитет</p>
-            </div>
-            <div id="safe-btn-container">
-                <button class="btn-action" style="width:auto; border-color: #444; color: #444;">🔒</button>
-            </div>
-        </div>
-    </div>
+    <div class="top-link" onclick="window.location.href='top.html'">ПЕРЕГЛЯНУТИ ТОП АВТОРИТЕТІВ</div>
 
-    <div id="leaderModal" class="modal">
-        <div class="modal-content">
-            <h2 style="color: #ffd700; font-size: 16px; margin-bottom: 20px;">ДОСКА ПОЧЕТА</h2>
-            <div id="leaderboard-list">
-                <div class="leader-item"><span class="gold-text">1. Леслав</span> <span>45.0 TON</span></div>
-                <div class="leader-item"><span>2. Малина_Бро</span> <span>12.5 TON</span></div>
-                <div class="leader-item"><span>3. Аноним</span> <span>8.2 TON</span></div>
-            </div>
-            <button class="btn-action" style="margin-top: 20px; border-color: #444; color: #888;" onclick="closeLeaders()">ЗАКРЫТЬ</button>
-        </div>
-    </div>
+    <script>
+        // Оновлення екрану
+        function updateUI() {
+            const loot = localStorage.getItem('user_loot') || '0.000';
+            document.getElementById('user-loot').innerText = loot + ' TON';
+            
+            if(localStorage.getItem('has_mask') === 'true') {
+                document.getElementById('user-rank').innerText = 'АНІНІМ';
+                document.getElementById('user-rank').style.background = '#555';
+            }
+        }
 
-    <div id="ton-connect-btn" style="margin-top: 20px;"></div>
-    <div class="logout-btn" onclick="logout()">Сменить масть (Выйти)</div>
+        // Функція покупки
+        function buyItem(id, price) {
+            let currentLoot = parseFloat(localStorage.getItem('user_loot') || '0');
+            
+            if (localStorage.getItem('has_' + id) === 'true') {
+                alert('У тебе вже є цей товар!');
+                return;
+            }
 
-<script>
-const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-    manifestUrl: 'https://leslav2025.github.io/Banda/tonconnect-manifest.json',
-    buttonRootId: 'ton-connect-btn'
-});
+            if (currentLoot >= price) {
+                currentLoot -= price;
+                localStorage.setItem('user_loot', currentLoot.toFixed(3));
+                localStorage.setItem('has_' + id, 'true');
+                alert('Покупка успішна! Твій статус оновлено.');
+                updateUI();
+            } else {
+                alert('Мало налу! Зароби в лотереї Мафія.');
+            }
+        }
 
-const MY_WALLET = "UQDXq1iAqu88tVRG62_k03kAXELu_1gzRBMye-VZoFRIRtWw";
-
-function updateUI() {
-    const savedLoot = localStorage.getItem('user_loot') || '0.000';
-    let obshakTotal = parseFloat(localStorage.getItem('obshak_total') || '1246.53');
-    
-    document.getElementById('personal-loot').innerText = savedLoot + ' TON';
-    document.getElementById('obshak-display').innerText = obshakTotal.toFixed(2) + ' TON';
-
-    const rankBadge = document.getElementById('rank-display');
-    const safeMission = document.getElementById('safe-mission');
-    const safeText = document.getElementById('safe-text');
-    const safeBtnContainer = document.getElementById('safe-btn-container');
-
-    // ЛОГИКА РАНГОВ И СЕЙФА
-    if (obshakTotal >= 1260 || localStorage.getItem('hasLockpick')) {
-        rankBadge.innerText = "Авторитет";
-        rankBadge.style.background = "#ffd700";
-        rankBadge.style.boxShadow = "0 0 20px #ffd700";
-        
-        safeMission.style.opacity = "1";
-        safeMission.style.borderLeftColor = "#ffd700";
-        safeText.innerText = "КУШ: 2.500 TON";
-        safeText.style.color = "#ffd700";
-        safeBtnContainer.innerHTML = `<button class="btn-action" style="width:auto; border-color:#ffd700; color:#ffd700;" onclick="window.location.href='safe.html'">В ДЕЛЕ</button>`;
-    } else if (obshakTotal >= 1250) {
-        rankBadge.innerText = "Бригадир";
-        rankBadge.style.background = "#00ff00";
-        rankBadge.style.boxShadow = "0 0 15px #00ff00";
-    }
-}
-
-async function sendRealTon(amount, itemName) {
-    if (!tonConnectUI.connected) return alert('Сначала подключи кошелёк!');
-    const transaction = {
-        validUntil: Math.floor(Date.now() / 1000) + 300,
-        messages: [{ address: MY_WALLET, amount: (amount * 1000000000).toString() }]
-    };
-    try {
-        await tonConnectUI.sendTransaction(transaction);
-        alert('ЕСТЬ! ' + itemName + ' оплачен.');
-        if(itemName === 'Отмычка') localStorage.setItem('hasLockpick', 'true');
         updateUI();
-    } catch (e) { alert('Сделка сорвалась...'); }
-}
-
-function showLeaders() { document.getElementById('leaderModal').style.display = "block"; }
-function closeLeaders() { document.getElementById('leaderModal').style.display = "none"; }
-
-function addToObshak() {
-    const currentLoot = parseFloat(localStorage.getItem('user_loot') || '0');
-    if (currentLoot > 0) {
-        let obshakTotal = parseFloat(localStorage.getItem('obshak_total') || '1246.53');
-        localStorage.setItem('obshak_total', (obshakTotal + currentLoot).toString());
-        localStorage.setItem('user_loot', '0.000');
-        updateUI();
-        alert('Красава! Общак пополнен.');
-    }
-}
-
-tonConnectUI.onStatusChange(wallet => {
-    if (wallet) {
-        document.getElementById('user-address').innerText = 'ID: ' + wallet.account.address.slice(0,10).toUpperCase();
-        updateUI();
-    } else { window.location.href = 'index.html'; }
-});
-
-async function logout() { await tonConnectUI.disconnect(); window.location.href = 'index.html'; }
-updateUI();
-</script>
+    </script>
 </body>
 </html>
